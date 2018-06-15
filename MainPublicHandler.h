@@ -31,13 +31,14 @@ private:
     void doNetworkEvent(Message *msg);
     void doDeviceEvent(Message *msg);
     void doRuleEvent(Message *msg);
+    void doSimulateEvent(Message *msg);
 
 }; /* class MainPublicHandler */
 
 MainPublicHandler& mainHandler();
 
-int initMainThread();
-int mainThreadRun();
+/* int initMainThread(); */
+/* int mainThreadRun(); */
 
 } /* namespace HB */
 

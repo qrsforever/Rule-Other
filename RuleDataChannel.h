@@ -20,6 +20,7 @@ public:
     RuleDataChannel();
     virtual ~RuleDataChannel();
 
+    virtual void init() { }
     virtual bool send(std::string key, int action, std::shared_ptr<DataPayload> payload);
 
 private:

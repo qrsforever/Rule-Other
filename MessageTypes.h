@@ -15,6 +15,7 @@ enum MessageTypes {
     MT_NETWORK,         /* network message */
     MT_DEVICE,          /* devices message */
     MT_RULE,            /* rule engine message */
+    MT_SIMULATE = 100,  /* only for simulate */
 };
 
 /******************

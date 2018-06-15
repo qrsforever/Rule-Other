@@ -12,6 +12,8 @@
 
 using namespace HB;
 
+extern "C" int mainThreadRun();
+
 int main(int argc, char *argv[])
 {
     /* TODO see rule-engine/RuleDriver/src/UnitTest.cpp */

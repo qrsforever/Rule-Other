@@ -12,6 +12,8 @@
 #include <memory>
 #include <string>
 
+#include "Object.h"
+
 #ifdef __cplusplus
 
 namespace HB {
@@ -21,7 +23,7 @@ typedef enum {
     PT_RULE_VERSION,
 } DataPayloadType;
 
-class DataPayload {
+class DataPayload : public ::UTILS::Object {
 public:
     DataPayload() {}
     ~DataPayload() {}
@@ -56,6 +58,7 @@ public:
     DataChannel() {}
     virtual ~DataChannel() {}
 
+    virtual void init() = 0;
     virtual bool send(std::string key, int action, std::shared_ptr<DataPayload> payload) = 0;
 }; /* class DataChannel */
 

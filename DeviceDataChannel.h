@@ -15,14 +15,24 @@
 
 namespace HB {
 
+class DeviceManager;
+class RuleEventHandler;
+
 class DeviceDataChannel : public DataChannel {
 public:
     DeviceDataChannel();
     ~DeviceDataChannel();
 
+    void init();
+
+    void onDeviceStateChanged(std::string did, std::string devName, int state);
+    void onDevicePropertyChanged(std::string did, std::string proKey, std::string proVal);
+
     bool send(std::string key, int action, std::shared_ptr<DataPayload> payload);
 
 private:
+    DeviceManager &mDeviceManger;
+    RuleEventHandler &mH;
 
 }; /* class DeviceDataChannel */
 

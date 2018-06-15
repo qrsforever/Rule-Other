@@ -14,6 +14,8 @@
 #include "RuleEventHandler.h"
 #include "RuleEngineService.h"
 
+#include "TempSimulateSuite.h" /* TODO only for test */
+
 namespace HB {
 
 static MessageLooper *gMainThread = 0;
@@ -75,6 +77,12 @@ void MainPublicHandler::doRuleEvent(Message *msg)
     }
 }
 
+void MainPublicHandler::doSimulateEvent(Message *msg)
+{
+    /* TODO only for test */
+    tempSimulateTest(msg);
+}
+
 void MainPublicHandler::handleMessage(Message *msg)
 {
     LOGD("msg: [%d] [%d] [%d]\n", msg->what, msg->arg1, msg->arg2);
@@ -91,6 +99,9 @@ void MainPublicHandler::handleMessage(Message *msg)
         case MT_RULE:
             doRuleEvent(msg);
             break;
+        case MT_SIMULATE:
+            doSimulateEvent(msg);
+            break;
         default:
             break;
     }
@@ -104,6 +115,8 @@ MainPublicHandler& mainHandler()
     }
     return *gMainHander;
 }
+
+extern "C" {
 
 int initMainThread()
 {
@@ -121,5 +134,7 @@ int mainThreadRun()
         gMainThread->run();
     return 0;
 }
+
+} /* extern C */
 
 } /* namespace HB */
