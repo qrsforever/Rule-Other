@@ -18,9 +18,15 @@ DeviceManager& deviceManager()
     return sDM;
 }
 
+CloudManager& cloudManager()
+{
+    static CloudManager sCM;
+    return sCM;
+}
+
 void tempSimulateTest(Message *msg)
 {
-    static int sCount = 4;
+    static int sCount = 5;
     static int sMagic = 0;
 
     switch (sMagic++ % sCount) {
@@ -32,6 +38,9 @@ void tempSimulateTest(Message *msg)
             break;
         case 3: /* property change */
             deviceManager().mPropertyCB("000001", "switch", "1");
+            break;
+        case 4:
+            cloudManager().mSyncCB("test");
             break;
     }
     mainHandler().sendEmptyMessageDelayed(msg->what, 1000);

@@ -19,7 +19,7 @@ using namespace UTILS;
 namespace HB {
 
 DeviceDataChannel::DeviceDataChannel()
-    : mDeviceManger(deviceManager())
+    : mDeviceMgr(deviceManager())
     , mH(ruleHandler())
 {
 
@@ -35,7 +35,7 @@ void DeviceDataChannel::init()
     LOGTT();
 
     /* regist device state changed callback */
-    mDeviceManger.registDeviceStateChangedCallback(
+    mDeviceMgr.registDeviceStateChangedCallback(
         std::bind(
             &DeviceDataChannel::onDeviceStateChanged,
             this,
@@ -45,7 +45,7 @@ void DeviceDataChannel::init()
         );
 
     /* regist device property changed callback */
-    mDeviceManger.registDevicePropertyChangedCallback(
+    mDeviceMgr.registDevicePropertyChangedCallback(
         std::bind(
             &DeviceDataChannel::onDevicePropertyChanged,
             this,
@@ -62,19 +62,20 @@ void DeviceDataChannel::onDeviceStateChanged(std::string did, std::string devNam
     switch (state) {
         case 1:
             { /* online */
-                std::string insName = std::string(ID_PREFIX) + did;
-                std::shared_ptr<StringArray> data = std::make_shared<StringArray>();
-                data->put(0, insName.c_str());
-                data->put(1, devName.c_str());
-                mH.sendMessage(mH.obtainMessage(RET_INSTANCE_ADD, data));
+                std::string insName = did; /* std::string(ID_PREFIX) + did; */
+                /* TODO dangerous using, let's try */
+                std::shared_ptr<InstancePayload> payload = std::make_shared<InstancePayload>();
+                payload->mInsName = insName;
+                payload->mClsName = devName;
+                mH.sendMessage(mH.obtainMessage(RET_INSTANCE_ADD, payload));
             }
             break;
         case 2: /* offline */
             {
-                std::string insName = std::string(ID_PREFIX) + did;
-                std::shared_ptr<StringArray> data = std::make_shared<StringArray>();
-                data->put(0, insName.c_str());
-                mH.sendMessage(mH.obtainMessage(RET_INSTANCE_DEL, data));
+                std::string insName = did; /* std::string(ID_PREFIX) + did; */
+                std::shared_ptr<InstancePayload> payload = std::make_shared<InstancePayload>();
+                payload->mInsName = insName;
+                mH.sendMessage(mH.obtainMessage(RET_INSTANCE_DEL, payload));
             }
             break;
     }
@@ -84,12 +85,11 @@ void DeviceDataChannel::onDevicePropertyChanged(std::string did, std::string pro
 {
     LOGTT();
 
-    std::string insName = std::string(ID_PREFIX) + did;
-    std::shared_ptr<StringArray> data = std::make_shared<StringArray>();
-    data->put(0, insName.c_str());
-    data->put(1, proKey.c_str());
-    data->put(2, proVal.c_str());
-    mH.sendMessage(mH.obtainMessage(RET_INSTANCE_PUT, data));
+    std::string insName = did; /* std::string(ID_PREFIX) + did; */
+    std::shared_ptr<InstancePayload> payload = std::make_shared<InstancePayload>();
+    payload->mInsName = insName;
+    payload->mSlots.push_back(InstancePayload::SlotInfo(proKey, proVal));
+    mH.sendMessage(mH.obtainMessage(RET_INSTANCE_PUT, payload));
 }
 
 bool DeviceDataChannel::send(std::string key, int action, std::shared_ptr<DataPayload> payload)
