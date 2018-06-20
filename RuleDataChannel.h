@@ -15,22 +15,32 @@
 
 namespace HB {
 
+class CloudManager;
+class RuleEventHandler;
+
 class RuleDataChannel : public DataChannel {
 public:
     RuleDataChannel();
     virtual ~RuleDataChannel();
 
-    virtual void init() { }
+    virtual void init() = 0;
     virtual bool send(std::string key, int action, std::shared_ptr<DataPayload> payload);
 
-private:
-
+protected:
+    CloudManager &mCloudMgr;
+    RuleEventHandler &mH;
 }; /* class RuleDataChannel */
 
 class ELinkRuleDataChannel : public RuleDataChannel {
 public:
-    ELinkRuleDataChannel() {}
-    ~ELinkRuleDataChannel() {}
+    ELinkRuleDataChannel();
+    ~ELinkRuleDataChannel();
+
+    void init();
+
+    void onRuleSync(std::string doc);
+
+    bool send(std::string key, int action, std::shared_ptr<DataPayload> payload);
 
 }; /* class ELinkRuleDataChannel */
 

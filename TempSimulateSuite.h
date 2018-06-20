@@ -43,6 +43,22 @@ public:
 
 DeviceManager& deviceManager();
 
+class CloudManager {
+public:
+    CloudManager() {}
+    ~CloudManager() {}
+
+    typedef std::function<void(std::string)> RuleSyncCallback;
+
+    void registRuleSyncCallback(RuleSyncCallback cb) {
+        mSyncCB = cb;
+    }
+public:
+    RuleSyncCallback mSyncCB;
+};
+
+CloudManager& cloudManager();
+
 void tempSimulateTest(Message *msg);
 
 } /* namespace HB */

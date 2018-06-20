@@ -31,7 +31,7 @@ public:
     bool send(std::string key, int action, std::shared_ptr<DataPayload> payload);
 
 private:
-    DeviceManager &mDeviceManger;
+    DeviceManager &mDeviceMgr;
     RuleEventHandler &mH;
 
 }; /* class DeviceDataChannel */
