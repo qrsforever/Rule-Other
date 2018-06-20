@@ -23,7 +23,7 @@ public:
     RuleDataChannel();
     virtual ~RuleDataChannel();
 
-    virtual void init() = 0;
+    virtual int init() = 0;
     virtual bool send(std::string key, int action, std::shared_ptr<DataPayload> payload);
 
 protected:
@@ -36,7 +36,7 @@ public:
     ELinkRuleDataChannel();
     ~ELinkRuleDataChannel();
 
-    void init();
+    int init();
 
     void onRuleSync(std::string doc);
 

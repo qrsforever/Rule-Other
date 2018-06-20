@@ -31,7 +31,9 @@ void tempSimulateTest(Message *msg)
 
     switch (sMagic++ % sCount) {
         case 1:
-            deviceManager().mStateCB("000001", "Light", 1 /* online */);
+            cloudManager().mSyncCB("test");
+            return;
+            // deviceManager().mStateCB("000001", "Light", 1 [> online <]);
             break;
         case 2:
             deviceManager().mStateCB("000001", "Light", 2 /* offline */);

@@ -23,7 +23,7 @@ public:
     DeviceDataChannel();
     ~DeviceDataChannel();
 
-    void init();
+    int init();
 
     void onDeviceStateChanged(std::string did, std::string devName, int state);
     void onDevicePropertyChanged(std::string did, std::string proKey, std::string proVal);

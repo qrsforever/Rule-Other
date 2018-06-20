@@ -39,6 +39,7 @@ void InitThread::run()
     /*****************************
      *  Rule Engine module init  *
      *****************************/
+    ruleEngine().setServerRoot("./RuleDriver/clips");
     ruleEngine().setDeviceChannel(std::make_shared<DeviceDataChannel>());
     ruleEngine().setRuleChannel(std::make_shared<ELinkRuleDataChannel>());
     ruleEngine().init();

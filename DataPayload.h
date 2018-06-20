@@ -25,9 +25,16 @@ typedef enum {
 } DataPayloadType;
 
 typedef enum {
-    KT_INSTANCE,
-    KT_FACT,
-} KnowledgeType;
+    CT_INSTANCE,
+    CT_FACT,
+} ConditionType;
+
+typedef enum {
+    AT_NOTIFY,
+    AT_SCENE,
+    AT_CONTROL,
+    AT_ASSERT,
+} ActionType;
 
 class DataPayload : public ::UTILS::Object {
 public:
@@ -54,82 +61,99 @@ public:
     std::vector<struct SlotInfo> mSlots;
 }; /* class InstancePayload */
 
-class SlotNode {
+class Condition;
+class SlotPoint {
 public:
-    SlotNode(std::string name) : mPointLogic("or") {}
-    SlotNode(std::string name, std::string flag);
-    virtual ~SlotNode();
+    SlotPoint(Condition &cond, std::string name) : mCellLogic("none"), mCond(cond) {}
+    SlotPoint(Condition &cond, std::string name, std::string flag);
+    virtual ~SlotPoint();
     std::string mSlotName;
-    std::string mPointLogic; /* connective symbol: &, |, ~ */
-    struct SlotPoint {
-        SlotPoint(std::string s1, std::string s2)
-            : nCmpFlag(s1), nValue(s2) {}
-        std::string nCmpFlag; /* compare symbol: >, <, =, >=, <=, <> */
+    std::string mCellLogic; /* connective symbol: &, |, ~, none*/
+
+    std::string toString(std::string fmt = "\n      ");
+
+    struct _Cell_ {
+        _Cell_(std::string s1, std::string s2)
+            : nSymbol(s1), nValue(s2) {}
+        std::string nSymbol; /* compare symbol: >, <, =, >=, <=, <>, none */
         std::string nValue;
     };
-    size_t pointCount() { return mPoints.size(); }
-    SlotNode& append(std::string s1, std::string s2);
-    SlotPoint* abtain(size_t index);
+    size_t cellCount() { return mCells.size(); }
+    SlotPoint& append(std::string s1, std::string s2);
+    std::string getSymbol(size_t index);
+    std::string getValue(size_t index);
 private:
-    std::vector<SlotPoint> mPoints;
-};
+    Condition& mCond;
+    std::vector<_Cell_> mCells;
+}; /* class SlotPoint */
 
 class Condition {
 public:
-    Condition(KnowledgeType type, std::string id, std::string logic = "and");
+    Condition(ConditionType type, std::string cls, std::string id, std::string logic = "none");
     virtual ~Condition();
-    KnowledgeType mType;
+    ConditionType mType;
+    std::string mCls;
     std::string mID;
-    std::string mSlotLogic; /* logic symbol between all slots */
-    SlotNode& makeSlot(std::string name, std::string logic = "or");
-    SlotNode* get(size_t index) const;
-private:
-    std::vector<SlotNode *> mSlots;
-};
+    std::string mSlotLogic; /* not used (only support "and"): logic symbol between all slots */
 
-class Action {
-public:
-    Action(KnowledgeType type, std::string assert)
-        : mType(type), mAssert(assert) {}
-    Action(KnowledgeType type, std::string id, std::string slotName, std::string slotvalue)
-        : mType(type), mID(id), mSlotName(slotName), mSlotValue(slotvalue) {}
-    virtual ~Action() { }
-    KnowledgeType mType;
-    std::string mID;
-    std::string mSlotName;
-    std::string mSlotValue;
-    std::string mAssert;
-};
+    std::string toString(std::string fmt = "\n    ");
+
+    SlotPoint& makeSlot(std::string name, std::string logic = "none");
+    SlotPoint* get(size_t index) const;
+    size_t slotCount() { return mSlots.size(); }
+private:
+    std::vector<SlotPoint *> mSlots;
+}; /* class Condition */
 
 class LHSNode {
 public:
     LHSNode(std::string logic = "and");
     virtual ~LHSNode();
-    std::string mCondLogic;
+    std::string mCondLogic; /* conditions logic: and, or */
 
-    Condition& makeCond(KnowledgeType type, std::string id);
+    std::string toString(std::string fmt = "\n  ");
+
+    Condition& makeCond(ConditionType type, std::string cls, std::string id);
     Condition* getCond(size_t index);
     size_t condCount() { return mConditions.size(); }
 
     LHSNode& makeNode(std::string logic = "and");
-    LHSNode* get(size_t index);
+    LHSNode* getChild(size_t index);
     size_t childCount() { return mChildren.size(); }
 private:
-    std::vector<Condition *> mConditions; /* leaf node make it sense */
+    std::vector<Condition *> mConditions;
     std::vector<LHSNode *> mChildren;
-};
+}; /* class LHSNode */
+
+class Action {
+public:
+    Action(ActionType type, std::string call, std::string name, std::string value);
+    Action(ActionType type, std::string call, std::string id, std::string name, std::string value);
+    virtual ~Action() { }
+
+    ActionType mType;
+    std::string mCall;
+    std::string mID;
+    std::string mSlotName;
+    std::string mSlotValue;
+
+    std::string toString(std::string fmt="\n  ");
+}; /* class Action */
 
 class RHSNode {
 public:
     RHSNode();
     virtual ~RHSNode();
-    Action& makeAction(KnowledgeType type, std::string assert);
-    Action& makeAction(KnowledgeType type, std::string id, std::string slotName, std::string slotvalue);
+
+    std::string toString(std::string fmt="\n  ");
+
+    Action& makeAction(ActionType type, std::string name, std::string value);
+    Action& makeAction(ActionType type, std::string id, std::string name, std::string value);
     Action* getAction(size_t index);
     size_t actionCount() { return mActions.size(); }
 private:
-    std::vector<Action *> mActions; /* leaf node make it sense */
-};
+    std::vector<Action *> mActions;
+}; /* class RHSNode */
 
 class RulePayload : public DataPayload {
 public:
@@ -140,13 +164,11 @@ public:
     std::string mRuleName;
     std::string mRuleID;
 
-    // std::string mCondLogic; /* and, or */
+    std::string toString(std::string fmt = "\n");
 
     std::shared_ptr<LHSNode> mLHS;
     std::shared_ptr<RHSNode> mRHS;
 
-    /* std::vector<std::shared_ptr<Condition>> mConditions; */
-    /* std::vector<std::shared_ptr<Action>> mActions; */
 }; /* class RulePayload */
 
 } /* namespace HB */
@@ -154,71 +176,3 @@ public:
 #endif /* __cplusplus */
 
 #endif /* __DataPayload_H__ */
-
-/* {
- *     "ruleName":"example",
- *         "ruleId":"
- *             -
- *             ",
- *         "description":"this is a example for ru
- *             le definition",
- *         "trigger":{
- *             "triggerType":"auto|manual",
- *             "switch":{
- *                 "enabled":"on",
- *                 "timeCondition":"on",
- *                 "deviceCondition ":"on",
- *                 "notify":"on",
- *                 "manual":"on"
- *             }
- *         },
- *         "conditions":{
- *             "conditionLogic":"and",
- *             "timeCondition":[
- *             {
- *                 "year":"2018",
- *                 "mouth":"10",
- *                 "day":"10|13|17",
- *                 "hour":"every",
- *                 "minute":"0",
- *                 "second":"0"
- *             }
- *             ],
- *             "deviceCondition":{
- *                 "deviceLogic":"or",
- *                 "deviceStatus":[
- *                 {
- *                     "deviceId":"0007A895C8A7",
- *                     "propName":"CurrentTemperature",
- *                     "propValue":"v>50"
- *                 },
- *                 {
- *                     "deviceId":"DC330D799327",
- *                     "propName":"onOffLight",
- *                     "propValue":"v==true"
- *                 }
- *                 ]
- *             }
- *         },
- *         "actions":{
- *             "notify":{
- *                 "tellYou":"Girlfriend Birthday!"
- *             },
- *             "deviceControl":[
- *             {
- *                 "deviceId":"0007A895C7C7",
- *                 "propName":"CurrentTemperature",
- *                 "propValue":"50"
- *             },
- *             {
- *                 "deviceId":"DC330D79932A",
- *                 "propName":"onOffLight",
- *                 "propValue":"true"
- *             }
- *             ],
- *             "manualRuleId":[
- *                 "100",
- *                 "101"
- *             ]
- *         }
- * } */

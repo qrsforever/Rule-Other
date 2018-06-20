@@ -30,7 +30,7 @@ DeviceDataChannel::~DeviceDataChannel()
 
 }
 
-void DeviceDataChannel::init()
+int DeviceDataChannel::init()
 {
     LOGTT();
 
@@ -53,6 +53,7 @@ void DeviceDataChannel::init()
             std::placeholders::_2,
             std::placeholders::_3)
         );
+    return 0;
 }
 
 void DeviceDataChannel::onDeviceStateChanged(std::string did, std::string devName, int state)
