@@ -25,10 +25,11 @@ public:
 
     int init();
 
-    void onDeviceStateChanged(std::string did, std::string devName, int state);
-    void onDevicePropertyChanged(std::string did, std::string proKey, std::string proVal);
+    void onStateChanged(std::string did, std::string devName, int state);
+    void onPropertyChanged(std::string did, std::string proKey, std::string proVal);
+    void onProfileSync(std::string devName, std::string doc);
 
-    bool send(std::string key, int action, std::shared_ptr<DataPayload> payload);
+    bool send(std::string key, int action, std::shared_ptr<Payload> payload);
 
 private:
     DeviceManager &mDeviceMgr;

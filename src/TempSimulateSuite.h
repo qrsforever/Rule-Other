@@ -27,6 +27,7 @@ public:
 
     typedef std::function<void(std::string, std::string, int)> DeviceStateChangedCallback;
     typedef std::function<void(std::string, std::string, std::string)> DevicePropertyChangedCallback;
+    typedef std::function<void(std::string, std::string)> DeviceProfileSyncCallback;
 
     void registDeviceStateChangedCallback(DeviceStateChangedCallback cb) {
         mStateCB = cb;
@@ -36,9 +37,14 @@ public:
         mPropertyCB = cb;
     }
 
+    void registDeviceProfileSyncCallback(DeviceProfileSyncCallback cb) {
+        mProfileCB = cb;
+    }
+
 public:
     DeviceStateChangedCallback mStateCB;
     DevicePropertyChangedCallback mPropertyCB;
+    DeviceProfileSyncCallback mProfileCB;
 };
 
 DeviceManager& deviceManager();
@@ -51,10 +57,10 @@ public:
     typedef std::function<void(std::string)> RuleSyncCallback;
 
     void registRuleSyncCallback(RuleSyncCallback cb) {
-        mSyncCB = cb;
+        mRuleSyncCB = cb;
     }
 public:
-    RuleSyncCallback mSyncCB;
+    RuleSyncCallback mRuleSyncCB;
 };
 
 CloudManager& cloudManager();

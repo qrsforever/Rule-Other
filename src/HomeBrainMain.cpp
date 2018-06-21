@@ -36,6 +36,11 @@ void InitThread::run()
      *************************/
 
 
+    /*******************************
+     *  Device Manger module init  *
+     *******************************/
+
+
     /*****************************
      *  Rule Engine module init  *
      *****************************/
@@ -43,11 +48,6 @@ void InitThread::run()
     ruleEngine().setDeviceChannel(std::make_shared<DeviceDataChannel>());
     ruleEngine().setRuleChannel(std::make_shared<ELinkRuleDataChannel>());
     ruleEngine().init();
-
-
-    /*******************************
-     *  Device Manger module init  *
-     *******************************/
 
 
     /* Simulate Test */

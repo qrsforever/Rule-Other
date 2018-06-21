@@ -1,24 +1,19 @@
 /***************************************************************************
- *  DataPayload.cpp - Data Payload Impl
+ *  RulePayload.cpp - Rule Payload Impl
  *
- *  Created: 2018-06-19 12:40:54
+ *  Created: 2018-06-21 13:57:43
  *
  *  Copyright QRS
  ****************************************************************************/
 
-#include "DataPayload.h"
+#include "RulePayload.h"
+
+#define ACT_NOTIFY_FUNC  "act-notify"
+#define ACT_SCENE_FUNC   "act-scene"
+#define ACT_CONTROL_FUNC "act-control"
+#define ACT_ASSERT_FUNC  "act-assert"
 
 namespace HB {
-
-
-InstancePayload::InstancePayload()
-{
-}
-
-InstancePayload::~InstancePayload()
-{
-    mSlots.clear();
-}
 
 SlotPoint::SlotPoint(Condition &cond, std::string name, std::string flag)
     : mSlotName(name)
@@ -153,7 +148,7 @@ std::string Condition::toString(std::string fmt)
             str.append(" ?").append(get(i)->mSlotName);
             tmp.append(get(i)->toString());
         }
-        str.append(")").append(tmp).append(fmt);
+        str.append(" $?others)").append(tmp).append(fmt);
         str.append(")");
     } else if (mType == CT_INSTANCE) {
         str.append("?").append(mID).append(" <- ");
@@ -283,11 +278,11 @@ Action& RHSNode::makeAction(ActionType type, std::string name, std::string value
 {
     Action *act = 0;
     if (type == AT_NOTIFY)
-        act = new Action(type, "act_notify", name, value);
+        act = new Action(type, ACT_NOTIFY_FUNC, name, value);
     else if (type == AT_SCENE)
-        act = new Action(type, "act_scene", name, value);
+        act = new Action(type, ACT_SCENE_FUNC, name, value);
     else
-        act = new Action(AT_ASSERT, "act_assert", name, value);
+        act = new Action(AT_ASSERT, ACT_ASSERT_FUNC, name, value);
     mActions.push_back(act);
     return *act;
 }
@@ -296,9 +291,9 @@ Action& RHSNode::makeAction(ActionType type, std::string id, std::string name, s
 {
     Action *act = 0;
     if (type == AT_CONTROL)
-        act = new Action(type, "act_control", id, name, value);
+        act = new Action(type, ACT_CONTROL_FUNC, id, name, value);
     else
-        act = new Action(AT_ASSERT, "act_assert", id, name, value);
+        act = new Action(AT_ASSERT, ACT_ASSERT_FUNC, id, name, value);
     mActions.push_back(act);
     return *act;
 }
@@ -343,7 +338,7 @@ std::string RulePayload::toString(std::string fmt)
     str.append(mLHS->toString());
     str.append(fmt).append("=>");
     str.append(mRHS->toString());
-    str.append(fmt).append(")");
+    str.append("\n)");
     return str.append(fmt);
 }
 

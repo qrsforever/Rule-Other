@@ -24,7 +24,7 @@ public:
     virtual ~RuleDataChannel();
 
     virtual int init() = 0;
-    virtual bool send(std::string key, int action, std::shared_ptr<DataPayload> payload);
+    virtual bool send(std::string key, int action, std::shared_ptr<Payload> payload);
 
 protected:
     CloudManager &mCloudMgr;
@@ -40,7 +40,7 @@ public:
 
     void onRuleSync(std::string doc);
 
-    bool send(std::string key, int action, std::shared_ptr<DataPayload> payload);
+    bool send(std::string key, int action, std::shared_ptr<Payload> payload);
 
 }; /* class ELinkRuleDataChannel */
 

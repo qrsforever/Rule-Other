@@ -26,24 +26,28 @@ CloudManager& cloudManager()
 
 void tempSimulateTest(Message *msg)
 {
-    static int sCount = 5;
+    static int sCount = 7;
     static int sMagic = 0;
 
     switch (sMagic++ % sCount) {
         case 1:
-            cloudManager().mSyncCB("test");
-            return;
-            // deviceManager().mStateCB("000001", "Light", 1 [> online <]);
+            deviceManager().mProfileCB("Light2", "json-doc");
             break;
         case 2:
-            deviceManager().mStateCB("000001", "Light", 2 /* offline */);
+            cloudManager().mRuleSyncCB("light-hot-to-off");
             break;
-        case 3: /* property change */
-            deviceManager().mPropertyCB("000001", "switch", "1");
+        case 3:
+            deviceManager().mStateCB("000001", "Light2", 1 /* online */);
+            deviceManager().mStateCB("000002", "Light2", 1 /* online */);
             break;
         case 4:
-            cloudManager().mSyncCB("test");
+            deviceManager().mStateCB("000002", "Light2", 2 /* offline */);
             break;
+        case 5: /* property change */
+            deviceManager().mPropertyCB("000001", "temprature", "85.0");
+            break;
+        case 6:
+            return;
     }
     mainHandler().sendEmptyMessageDelayed(msg->what, 1000);
 }

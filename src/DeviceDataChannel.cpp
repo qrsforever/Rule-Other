@@ -9,7 +9,8 @@
 #include "DeviceDataChannel.h"
 #include "RuleEventHandler.h"
 #include "RuleEventTypes.h"
-#include "StringArray.h"
+#include "InstancePayload.h"
+#include "ClassPayload.h"
 #include "Log.h"
 
 #include "TempSimulateSuite.h" /* TODO only test */
@@ -37,7 +38,7 @@ int DeviceDataChannel::init()
     /* regist device state changed callback */
     mDeviceMgr.registDeviceStateChangedCallback(
         std::bind(
-            &DeviceDataChannel::onDeviceStateChanged,
+            &DeviceDataChannel::onStateChanged,
             this,
             std::placeholders::_1,
             std::placeholders::_2,
@@ -47,23 +48,32 @@ int DeviceDataChannel::init()
     /* regist device property changed callback */
     mDeviceMgr.registDevicePropertyChangedCallback(
         std::bind(
-            &DeviceDataChannel::onDevicePropertyChanged,
+            &DeviceDataChannel::onPropertyChanged,
             this,
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3)
         );
+
+    /* regist device profile sync callback */
+    mDeviceMgr.registDeviceProfileSyncCallback(
+        std::bind(
+            &DeviceDataChannel::onProfileSync,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2)
+        );
     return 0;
 }
 
-void DeviceDataChannel::onDeviceStateChanged(std::string did, std::string devName, int state)
+void DeviceDataChannel::onStateChanged(std::string did, std::string devName, int state)
 {
     LOGTT();
 
     switch (state) {
         case 1:
             { /* online */
-                std::string insName = did; /* std::string(ID_PREFIX) + did; */
+                std::string insName = innerOfInsname(did);
                 /* TODO dangerous using, let's try */
                 std::shared_ptr<InstancePayload> payload = std::make_shared<InstancePayload>();
                 payload->mInsName = insName;
@@ -73,7 +83,7 @@ void DeviceDataChannel::onDeviceStateChanged(std::string did, std::string devNam
             break;
         case 2: /* offline */
             {
-                std::string insName = did; /* std::string(ID_PREFIX) + did; */
+                std::string insName = innerOfInsname(did);
                 std::shared_ptr<InstancePayload> payload = std::make_shared<InstancePayload>();
                 payload->mInsName = insName;
                 mH.sendMessage(mH.obtainMessage(RET_INSTANCE_DEL, payload));
@@ -82,18 +92,29 @@ void DeviceDataChannel::onDeviceStateChanged(std::string did, std::string devNam
     }
 }
 
-void DeviceDataChannel::onDevicePropertyChanged(std::string did, std::string proKey, std::string proVal)
+void DeviceDataChannel::onPropertyChanged(std::string did, std::string proKey, std::string proVal)
 {
     LOGTT();
 
-    std::string insName = did; /* std::string(ID_PREFIX) + did; */
+    std::string insName = innerOfInsname(did);
     std::shared_ptr<InstancePayload> payload = std::make_shared<InstancePayload>();
     payload->mInsName = insName;
     payload->mSlots.push_back(InstancePayload::SlotInfo(proKey, proVal));
     mH.sendMessage(mH.obtainMessage(RET_INSTANCE_PUT, payload));
 }
 
-bool DeviceDataChannel::send(std::string key, int action, std::shared_ptr<DataPayload> payload)
+void DeviceDataChannel::onProfileSync(std::string devName, std::string doc)
+{
+    LOGTT();
+    std::shared_ptr<ClassPayload> payload = std::make_shared<ClassPayload>(devName, "DEVICE");
+    payload->makeSlot(ST_INTEGER, "switch", "0 1", false);
+    payload->makeSlot(ST_FLOAT, "temprature", "-15.0", "95.0", false);
+    payload->makeSlot(ST_STRING, "color", "\"red\" \"green\" \"blue\"", false);
+
+    mH.sendMessage(mH.obtainMessage(RET_CLASS_SYNC, payload));
+}
+
+bool DeviceDataChannel::send(std::string key, int action, std::shared_ptr<Payload> payload)
 {
     return false;
 }

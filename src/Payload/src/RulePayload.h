@@ -1,28 +1,23 @@
 /***************************************************************************
- *  DataPayload.h - Data Payload Header
+ *  RulePayload.h - Rule Payload Header
  *
- *  Created: 2018-06-19 12:38:34
+ *  Created: 2018-06-21 13:56:36
  *
  *  Copyright QRS
  ****************************************************************************/
 
-#ifndef __DataPayload_H__
-#define __DataPayload_H__
+#ifndef __RulePayload_H__
+#define __RulePayload_H__
+
+#include "Payload.h"
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "Object.h"
-
 #ifdef __cplusplus
 
 namespace HB {
-
-typedef enum {
-    PT_INSTANCE_PAYLOAD,
-    PT_RULE_PAYLOAD,
-} DataPayloadType;
 
 typedef enum {
     CT_INSTANCE,
@@ -36,32 +31,8 @@ typedef enum {
     AT_ASSERT,
 } ActionType;
 
-class DataPayload : public ::UTILS::Object {
-public:
-    DataPayload() {}
-    ~DataPayload() {}
-    virtual DataPayloadType type() = 0;
-}; /* class DataPayload */
-
-class InstancePayload : public DataPayload {
-public:
-    InstancePayload();
-    ~InstancePayload();
-    DataPayloadType type() { return PT_INSTANCE_PAYLOAD; }
-
-    std::string mInsName;
-    std::string mClsName;
-
-    struct SlotInfo {
-        SlotInfo(std::string name, std::string value)
-            : nName(name), nValue(value) {}
-        std::string nName;
-        std::string nValue;
-    };
-    std::vector<struct SlotInfo> mSlots;
-}; /* class InstancePayload */
-
 class Condition;
+
 class SlotPoint {
 public:
     SlotPoint(Condition &cond, std::string name) : mCellLogic("none"), mCond(cond) {}
@@ -155,24 +126,23 @@ private:
     std::vector<Action *> mActions;
 }; /* class RHSNode */
 
-class RulePayload : public DataPayload {
+class RulePayload : public Payload {
 public:
     RulePayload() {}
     RulePayload(std::string name, std::string id);
     ~RulePayload();
-    DataPayloadType type() { return PT_RULE_PAYLOAD; }
+    PayloadType type() { return PT_RULE_PAYLOAD; }
     std::string mRuleName;
     std::string mRuleID;
 
-    std::string toString(std::string fmt = "\n");
+    std::string toString(std::string fmt = "");
 
     std::shared_ptr<LHSNode> mLHS;
     std::shared_ptr<RHSNode> mRHS;
-
 }; /* class RulePayload */
 
 } /* namespace HB */
 
 #endif /* __cplusplus */
 
-#endif /* __DataPayload_H__ */
+#endif /* __RulePayload_H__ */
