@@ -45,12 +45,13 @@ private:
 
 class ClassPayload : public Payload {
 public:
-    ClassPayload(std::string clsname, std::string supercls, bool abst = false, bool react = true);
+    ClassPayload(std::string clsname, std::string supercls, std::string ver, bool abst = false, bool react = true);
     virtual ~ClassPayload();
     PayloadType type() { return PT_CLASS_PAYLOAD; }
 
     std::string mClsName;
     std::string mSuperCls; /* (is-a superclass) */
+    std::string mVersion;
 
     bool mIsAbstract; /* (role concrete | abstract) */
     bool mIsReactive;  /* (pattern-match reactive | non-reactive) */

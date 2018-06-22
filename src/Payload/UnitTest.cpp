@@ -15,7 +15,7 @@ using namespace HB;
 void test_class_payload()
 {
     printf("\n >>> test_class_payload <<< \n");
-    std::shared_ptr<ClassPayload> payload = std::make_shared<ClassPayload>("Light", "DEVICE");
+    std::shared_ptr<ClassPayload> payload = std::make_shared<ClassPayload>("Light", "DEVICE", "1.0.0");
     payload->makeSlot(ST_INTEGER, "switch", "0 1", false);
     payload->makeSlot(ST_FLOAT, "temprature", "-15.0", "95.0", false);
     payload->makeSlot(ST_STRING, "color", "r g b", false);
@@ -26,12 +26,16 @@ void test_class_payload()
 void test_rule_payload()
 {
     printf("\n >>> test_rule_payload <<< \n");
-    std::shared_ptr<RulePayload> payload = std::make_shared<RulePayload>("example", "0001");
+    std::shared_ptr<RulePayload> payload = std::make_shared<RulePayload>("example", innerOfRulename("0001"), "1.0.0");
 
     /* Condition */
     payload->mLHS->mCondLogic = "and"; // TOP
 
+#if 1
     Condition &timeCond = payload->mLHS->makeCond(CT_FACT, "time", "fct_t1");
+#else
+    Condition &timeCond = payload->mLHS->makeCond(CT_TEMPLATE, "datetime", "fct_t2");
+#endif
     timeCond.makeSlot("year").append("=", "2018");
     timeCond.makeSlot("month").append("=", "06");
     timeCond.makeSlot("day", "|").append("=", "20").append("=", "21").append("=", "22");
@@ -54,7 +58,7 @@ void test_rule_payload()
     payload->mRHS->makeAction(AT_CONTROL, innerOfInsname("0007A895C7C7"), "CurrentTemperature", "50");
     payload->mRHS->makeAction(AT_CONTROL, innerOfInsname("DC330D79932A"), "onOffLight", "1");
     payload->mRHS->makeAction(AT_NOTIFY, "tellYou", "Girlfriend Birthday");
-    payload->mRHS->makeAction(AT_SCENE, "array", "100 101");
+    payload->mRHS->makeAction(AT_SCENE, "list", "rul-100 rul-101");
 
     printf("%s\n", payload->toString().c_str());
 }

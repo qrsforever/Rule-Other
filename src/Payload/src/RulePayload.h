@@ -22,6 +22,7 @@ namespace HB {
 typedef enum {
     CT_INSTANCE,
     CT_FACT,
+    CT_TEMPLATE,
 } ConditionType;
 
 typedef enum {
@@ -129,17 +130,21 @@ private:
 class RulePayload : public Payload {
 public:
     RulePayload() {}
-    RulePayload(std::string name, std::string id);
+    RulePayload(std::string name, std::string id, std::string ver);
     ~RulePayload();
     PayloadType type() { return PT_RULE_PAYLOAD; }
     std::string mRuleName;
     std::string mRuleID;
+    std::string mVersion;
 
     std::string toString(std::string fmt = "");
 
     std::shared_ptr<LHSNode> mLHS;
     std::shared_ptr<RHSNode> mRHS;
 }; /* class RulePayload */
+
+std::string innerOfRulename(std::string name);
+std::string outerOfRulename(std::string name);
 
 } /* namespace HB */
 

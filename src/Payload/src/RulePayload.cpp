@@ -7,11 +7,14 @@
  ****************************************************************************/
 
 #include "RulePayload.h"
+#include <string.h>
 
 #define ACT_NOTIFY_FUNC  "act-notify"
 #define ACT_SCENE_FUNC   "act-scene"
 #define ACT_CONTROL_FUNC "act-control"
 #define ACT_ASSERT_FUNC  "act-assert"
+
+#define RULE_ID_PREFIX "rul-"
 
 namespace HB {
 
@@ -83,7 +86,7 @@ std::string SlotPoint::toString(std::string fmt)
             }
             str.append("))");
         }
-    } else if (mCond.mType == CT_INSTANCE) {
+    } else if (mCond.mType == CT_INSTANCE || mCond.mType == CT_TEMPLATE) {
         if (log == "none") {
             if (getSymbol(0) == "none")
                 return std::string();
@@ -153,6 +156,12 @@ std::string Condition::toString(std::string fmt)
     } else if (mType == CT_INSTANCE) {
         str.append("?").append(mID).append(" <- ");
         str.append("(object (is-a ").append(mCls).append(")");
+        for (size_t i = 0; i < slotCount(); ++i)
+            str.append(get(i)->toString(fmt + "  "));
+        str.append(fmt).append(")");
+    } else if (mType == CT_TEMPLATE) {
+        str.append("?").append(mID).append(" <- ");
+        str.append("(").append(mCls);
         for (size_t i = 0; i < slotCount(); ++i)
             str.append(get(i)->toString(fmt + "  "));
         str.append(fmt).append(")");
@@ -317,9 +326,10 @@ std::string RHSNode::toString(std::string fmt)
     return str;
 }
 
-RulePayload::RulePayload(std::string name, std::string id)
+RulePayload::RulePayload(std::string name, std::string id, std::string ver)
     : mRuleName(name)
     , mRuleID(id)
+    , mVersion(ver)
 {
     mLHS = std::make_shared<LHSNode>();
     mRHS = std::make_shared<RHSNode>();
@@ -334,12 +344,27 @@ RulePayload::~RulePayload()
 std::string RulePayload::toString(std::string fmt)
 {
     std::string str(fmt);
-    str.append("(defrule ").append(mRuleName);
+    str.append("(defrule ").append(mRuleID);
+    if (!mRuleName.empty())
+        str.append(" \"").append(mRuleName).append("\"");
     str.append(mLHS->toString());
-    str.append(fmt).append("=>");
+    str.append("\n ").append("=>");
     str.append(mRHS->toString());
     str.append("\n)");
     return str.append(fmt);
+}
+
+std::string innerOfRulename(std::string name)
+{
+    return std::string(RULE_ID_PREFIX).append(name);
+}
+
+std::string outerOfRulename(std::string name)
+{
+    int len = strlen(RULE_ID_PREFIX);
+    if (0 == name.compare(0, len, RULE_ID_PREFIX))
+        return name.substr(len);
+    return name;
 }
 
 } /* namespace HB */

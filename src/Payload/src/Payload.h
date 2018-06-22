@@ -24,7 +24,7 @@ typedef enum {
 class Payload : public ::UTILS::Object {
 public:
     Payload() {}
-    ~Payload() {}
+    virtual ~Payload() {}
     virtual PayloadType type() = 0;
 }; /* class Payload */
 

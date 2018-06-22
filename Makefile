@@ -7,23 +7,23 @@ OPTIMIZE :=
 WARNINGS := -Wall -Wno-unused -Wno-format
 DEFS     := -DDEBUG -DUSE_SHARED_PTR
 
-PROJECT_ROOT_DIR := $(shell git worktree list | cut -d \  -f1)
+CURRENT_DIR := $(shell pwd)
+PROJECT_ROOT_DIR := $(shell dirname `git rev-parse --git-dir`)
 IS_HOMEBRAIN := $(shell git config --get remote.origin.url | grep -o smarthome)
 
 ifeq ($(IS_HOMEBRAIN), smarthome)
-	UTILS_DIR := ../utils
+	UTILS_DIR := $(CURRENT_DIR)/../utils
 	CLIPS_DIR := $(PROJECT_ROOT_DIR)/homebrain/external/clips/core
 	CLIPS_LIB := $(PROJECT_ROOT_DIR)/out/linux/x86_64/release
 else
-	UTILS_DIR := Utils
+	UTILS_DIR := $(CURRENT_DIR)/Utils
 	CLIPS_DIR := /workspace/clips/learn/clips_core_source_630/core
 	CLIPS_LIB := $(CLIPS_DIR)
-	DRIVE_DIR := RuleDriver
 endif
 
-CLIPSCPP_DIR:= Clipscpp
-DRIVER_DIR  := RuleDriver
-PAYLOAD_DIR := Payload
+CLIPSCPP_DIR:= $(CURRENT_DIR)/Clipscpp
+DRIVER_DIR  := $(CURRENT_DIR)/RuleDriver
+PAYLOAD_DIR := $(CURRENT_DIR)/Payload
 MISC_DIR 	:= $(UTILS_DIR)/Misc
 MESSAGE_DIR := $(UTILS_DIR)/Message
 LOG_DIR 	:= $(UTILS_DIR)/Log
@@ -92,7 +92,7 @@ endif
 # 定义伪目标
 PHONY = all .mkdir clean
 
-all: .mkdir $(TARGET_NAME) test
+all: .dep .mkdir $(TARGET_NAME) test
 
 # 函数: 添加%.x依赖文件的路径
 define add_vpath
@@ -126,10 +126,24 @@ $(TARGET_NAME): .mkdir $(OBJECTS)
 	$(LD) $(OBJECTS) -o $@ $(LDFLAGS)
 endif
 
+.dep:
+	@cd $(MISC_DIR); make;
+	@cd $(MESSAGE_DIR);make;
+	@cd $(LOG_DIR);make;
+	@cd $(CLIPSCPP_DIR);make;
+	@cd $(PAYLOAD_DIR);make;
+	@cd $(DRIVER_DIR);make;
+
 .mkdir:
 	@if [ ! -d $(OBJ_DIR) ]; then mkdir -p $(OBJ_DIR); fi
 
 clean:
+	@cd $(MISC_DIR); make clean;
+	@cd $(MESSAGE_DIR);make clean;
+	@cd $(LOG_DIR);make clean;
+	@cd $(CLIPSCPP_DIR);make clean;
+	@cd $(PAYLOAD_DIR);make clean;
+	@cd $(DRIVER_DIR);make clean;
 	rm -rf $(OUT_DIR)
 
 run:$(TARGET_NAME)

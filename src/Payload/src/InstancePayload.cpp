@@ -9,7 +9,7 @@
 #include "InstancePayload.h"
 #include <string.h>
 
-#define ID_PREFIX "ins_"
+#define INS_ID_PREFIX "ins-"
 
 namespace HB {
 
@@ -24,13 +24,13 @@ InstancePayload::~InstancePayload()
 
 std::string innerOfInsname(std::string name)
 {
-    return std::string(ID_PREFIX).append(name);
+    return std::string(INS_ID_PREFIX).append(name);
 }
 
 std::string outerOfInsname(std::string name)
 {
-    int len = strlen(ID_PREFIX);
-    if (0 == name.compare(0, len, ID_PREFIX))
+    int len = strlen(INS_ID_PREFIX);
+    if (0 == name.compare(0, len, INS_ID_PREFIX))
         return name.substr(len);
     return name;
 }

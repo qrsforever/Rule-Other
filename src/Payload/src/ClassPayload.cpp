@@ -61,8 +61,8 @@ std::string Slot::toString(std::string fmt)
     return str;
 }
 
-ClassPayload::ClassPayload(std::string clsname, std::string supercls, bool abst, bool react)
-    : mClsName(clsname), mSuperCls(supercls)
+ClassPayload::ClassPayload(std::string clsname, std::string supercls, std::string ver, bool abst, bool react)
+    : mClsName(clsname), mSuperCls(supercls), mVersion(ver)
     , mIsAbstract(abst), mIsReactive(react)
 {
 }
