@@ -23,7 +23,7 @@ public:
     virtual ~DataChannel() {}
 
     virtual int init() = 0;
-    virtual bool send(std::string key, int action, std::shared_ptr<Payload> payload) = 0;
+    virtual bool send(int action, std::shared_ptr<Payload> payload) = 0;
 }; /* class DataChannel */
 
 } /* namespace HB */

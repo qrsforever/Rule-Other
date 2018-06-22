@@ -27,7 +27,7 @@ RuleDataChannel::~RuleDataChannel()
 {
 }
 
-bool RuleDataChannel::send(std::string key, int action, std::shared_ptr<Payload> payload)
+bool RuleDataChannel::send(int action, std::shared_ptr<Payload> payload)
 {
     return false;
 }
@@ -62,7 +62,7 @@ void ELinkRuleDataChannel::onRuleSync(std::string doc)
     LOGTT();
     /* TODO need json parse doc */
 
-    std::shared_ptr<RulePayload> payload = std::make_shared<RulePayload>(doc, "0001");
+    std::shared_ptr<RulePayload> payload = std::make_shared<RulePayload>(doc, innerOfRulename("0001"), "1.0.0");
 
     /* Condition */
     payload->mLHS->mCondLogic = "and"; // TOP
@@ -71,6 +71,9 @@ void ELinkRuleDataChannel::onRuleSync(std::string doc)
     timeCond.makeSlot("year").append("=", "2018");
     timeCond.makeSlot("month").append("=", "06");
     timeCond.makeSlot("day", "|").append("=", "20").append("=", "21").append("=", "22");
+    timeCond.makeSlot("hour");
+    timeCond.makeSlot("minute");
+    timeCond.makeSlot("second", "|").append("=", "15").append("=", "25").append("=", "35").append("=", "45");
 
     Condition &cond1 = payload->mLHS->makeCond(CT_INSTANCE, "Light2", innerOfInsname("000001"));
     cond1.makeSlot("temprature").append(">", "80");
@@ -82,7 +85,7 @@ void ELinkRuleDataChannel::onRuleSync(std::string doc)
     mH.sendMessage(mH.obtainMessage(RET_RULE_SYNC, payload));
 }
 
-bool ELinkRuleDataChannel::send(std::string key, int action, std::shared_ptr<Payload> payload)
+bool ELinkRuleDataChannel::send(int action, std::shared_ptr<Payload> payload)
 {
     return false;
 }

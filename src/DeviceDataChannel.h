@@ -29,7 +29,7 @@ public:
     void onPropertyChanged(std::string did, std::string proKey, std::string proVal);
     void onProfileSync(std::string devName, std::string doc);
 
-    bool send(std::string key, int action, std::shared_ptr<Payload> payload);
+    bool send(int action, std::shared_ptr<Payload> payload);
 
 private:
     DeviceManager &mDeviceMgr;

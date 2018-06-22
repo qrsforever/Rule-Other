@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
      *  First init log module  *
      ***************************/
     initLogThread();
-    setLogLevel(LOG_LEVEL_TRACE);
+    setLogLevel(LOG_LEVEL_INFO);
 
     /*****************************
      *  Second init main module  *

@@ -41,6 +41,8 @@ public:
         mProfileCB = cb;
     }
 
+    void setProperty(std::string did, std::string pro, std::string val);
+
 public:
     DeviceStateChangedCallback mStateCB;
     DevicePropertyChangedCallback mPropertyCB;

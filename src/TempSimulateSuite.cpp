@@ -18,6 +18,11 @@ DeviceManager& deviceManager()
     return sDM;
 }
 
+void DeviceManager::setProperty(std::string did, std::string pro, std::string val)
+{
+    LOGD("(%s, %s, %s)\n", did.c_str(), pro.c_str(), val.c_str());
+}
+
 CloudManager& cloudManager()
 {
     static CloudManager sCM;

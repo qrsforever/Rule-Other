@@ -73,19 +73,16 @@ void DeviceDataChannel::onStateChanged(std::string did, std::string devName, int
     switch (state) {
         case 1:
             { /* online */
-                std::string insName = innerOfInsname(did);
-                /* TODO dangerous using, let's try */
                 std::shared_ptr<InstancePayload> payload = std::make_shared<InstancePayload>();
-                payload->mInsName = insName;
+                payload->mInsName = innerOfInsname(did);
                 payload->mClsName = devName;
                 mH.sendMessage(mH.obtainMessage(RET_INSTANCE_ADD, payload));
             }
             break;
         case 2: /* offline */
             {
-                std::string insName = innerOfInsname(did);
                 std::shared_ptr<InstancePayload> payload = std::make_shared<InstancePayload>();
-                payload->mInsName = insName;
+                payload->mInsName = innerOfInsname(did);
                 mH.sendMessage(mH.obtainMessage(RET_INSTANCE_DEL, payload));
             }
             break;
@@ -96,9 +93,8 @@ void DeviceDataChannel::onPropertyChanged(std::string did, std::string proKey, s
 {
     LOGTT();
 
-    std::string insName = innerOfInsname(did);
     std::shared_ptr<InstancePayload> payload = std::make_shared<InstancePayload>();
-    payload->mInsName = insName;
+    payload->mInsName = innerOfInsname(did);
     payload->mSlots.push_back(InstancePayload::SlotInfo(proKey, proVal));
     mH.sendMessage(mH.obtainMessage(RET_INSTANCE_PUT, payload));
 }
@@ -106,7 +102,7 @@ void DeviceDataChannel::onPropertyChanged(std::string did, std::string proKey, s
 void DeviceDataChannel::onProfileSync(std::string devName, std::string doc)
 {
     LOGTT();
-    std::shared_ptr<ClassPayload> payload = std::make_shared<ClassPayload>(devName, "DEVICE");
+    std::shared_ptr<ClassPayload> payload = std::make_shared<ClassPayload>(devName, "DEVICE", "1.0.0");
     payload->makeSlot(ST_INTEGER, "switch", "0 1", false);
     payload->makeSlot(ST_FLOAT, "temprature", "-15.0", "95.0", false);
     payload->makeSlot(ST_STRING, "color", "\"red\" \"green\" \"blue\"", false);
@@ -114,9 +110,17 @@ void DeviceDataChannel::onProfileSync(std::string devName, std::string doc)
     mH.sendMessage(mH.obtainMessage(RET_CLASS_SYNC, payload));
 }
 
-bool DeviceDataChannel::send(std::string key, int action, std::shared_ptr<Payload> payload)
+bool DeviceDataChannel::send(int action, std::shared_ptr<Payload> data)
 {
-    return false;
+    LOGTT();
+    if (action == PT_INSTANCE_PAYLOAD) {
+        std::shared_ptr<InstancePayload> payload(std::dynamic_pointer_cast<InstancePayload>(data));
+        mDeviceMgr.setProperty(
+            outerOfInsname(payload->mInsName),
+            payload->mSlots[0].nName,
+            payload->mSlots[0].nValue);
+    }
+    return true;
 }
 
 } /* namespace HB */

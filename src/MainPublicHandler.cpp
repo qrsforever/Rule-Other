@@ -62,10 +62,6 @@ void MainPublicHandler::doRuleEvent(Message *msg)
                     /* TODO Do nothing */
                     break;
                 case RULE_SYNC_NEW_VERSION:
-                    if (msg->obj) {
-                        std::shared_ptr<StringData> ruleId(std::dynamic_pointer_cast<StringData>(msg->obj));
-                        ruleEngine().newRuleFound(ruleId->getData());
-                    }
                     break;
                 case RULE_SYNC_CHECK_TIMER:
                     sendMessageDelayed(obtainMessage(msg->what, msg->arg1, msg->arg2), 900000);
