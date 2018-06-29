@@ -31,6 +31,8 @@ public:
 
 void InitThread::run()
 {
+    printf("\n-----------Init Thread:[%u]---------\n", (unsigned int)pthread_self());
+
     /*************************
      *  Network module init  *
      *************************/
@@ -44,27 +46,27 @@ void InitThread::run()
     /*****************************
      *  Rule Engine module init  *
      *****************************/
-    ruleEngine().setServerRoot("./RuleDriver/clips");
-    ruleEngine().setDeviceChannel(std::make_shared<DeviceDataChannel>());
+    ruleEngine().setServerRoot("RuleDriver/clips");
+    ruleEngine().setDeviceChannel(std::make_shared<ElinkDeviceDataChannel>());
     ruleEngine().setRuleChannel(std::make_shared<ELinkRuleDataChannel>());
     ruleEngine().init();
 
 
     /* Simulate Test */
-    mainHandler().sendEmptyMessage(MT_SIMULATE);
+    mainHandler().sendMessageDelayed(mainHandler().obtainMessage(MT_SIMULATE, 0, 0), 1000);
 }
 
 int main(int argc, char *argv[])
 {
     (void)argc;
     (void)argv;
-    printf("\n-----------Test---------\n");
+    printf("\n-----------Main Thread:[%u]---------\n", (unsigned int)pthread_self());
 
     /***************************
      *  First init log module  *
      ***************************/
     initLogThread();
-    setLogLevel(LOG_LEVEL_INFO);
+    setLogLevel(LOG_LEVEL_TRACE);
 
     /*****************************
      *  Second init main module  *

@@ -51,7 +51,7 @@ EXCLUDE_SRC := %UnitTest.cpp
 # 设置目标类型(exe, a, so), 及目标名字
 TARGET_TYPE := a
 TARGET_TYPE := $(strip $(TARGET_TYPE))
-TARGET_NAME :=
+TARGET_NAME := RE_payload
 
 ifeq ($(TARGET_NAME), )
 	TARGET_NAME := $(shell basename $(PWD))

@@ -15,10 +15,12 @@ ifeq ($(IS_HOMEBRAIN), smarthome)
 	UTILS_DIR := $(CURRENT_DIR)/../utils
 	CLIPS_DIR := $(PROJECT_ROOT_DIR)/homebrain/external/clips/core
 	CLIPS_LIB := $(PROJECT_ROOT_DIR)/out/linux/x86_64/release
+	JSON_DIR  := $(PROJECT_ROOT_DIR)/extlibs/rapidjson/rapidjson
 else
 	UTILS_DIR := $(CURRENT_DIR)/Utils
 	CLIPS_DIR := /workspace/clips/learn/clips_core_source_630/core
 	CLIPS_LIB := $(CLIPS_DIR)
+	JSON_DIR  := /data/source/rapidjson
 endif
 
 CLIPSCPP_DIR:= $(CURRENT_DIR)/Clipscpp
@@ -27,6 +29,7 @@ PAYLOAD_DIR := $(CURRENT_DIR)/Payload
 MISC_DIR 	:= $(UTILS_DIR)/Misc
 MESSAGE_DIR := $(UTILS_DIR)/Message
 LOG_DIR 	:= $(UTILS_DIR)/Log
+SQLITE_DIR := $(UTILS_DIR)/SQLite
 
 # 初始化编译工具以及编译选项
 CROSS_COMPILE =
@@ -35,9 +38,9 @@ CXX 	:= $(CROSS_COMPILE)g++
 CC		:=
 AR		:= $(CROSS_COMPILE)ar
 CFLAGS  := $(OPTIMIZE) $(WARNINGS) $(DEFS)
-CPPFLAGS:= -std=c++11 -lRuleDriver -lClipscpp -lPayload -lclips -lUtils_log -lUtils_message -lUtils_misc -lpthread
-LDFLAGS := -L$(DRIVER_DIR)/output -L$(CLIPSCPP_DIR)/output -L$(PAYLOAD_DIR)/output -L$(CLIPS_LIB) -L$(MISC_DIR)/output -L$(MESSAGE_DIR)/output -L$(LOG_DIR)/output
-INCLUDE := -I$(CLIPSCPP_DIR)/src -I$(MISC_DIR)/src -I$(MESSAGE_DIR)/src -I$(LOG_DIR)/src -I$(PAYLOAD_DIR)/src -I$(DRIVER_DIR)/src
+CPPFLAGS:= -std=c++11 -lRE_driver -lClipscpp -lRE_payload -lclips -lUtils_sqlite -lUtils_log -lUtils_message -lUtils_misc -lpthread  -lsqlite3
+LDFLAGS := -L$(DRIVER_DIR)/output -L$(CLIPSCPP_DIR)/output -L$(PAYLOAD_DIR)/output -L$(CLIPS_LIB) -L$(MISC_DIR)/output -L$(MESSAGE_DIR)/output -L$(LOG_DIR)/output -L$(SQLITE_DIR)/output
+INCLUDE := -I$(JSON_DIR)/include -I$(CLIPSCPP_DIR)/src -I$(MISC_DIR)/src -I$(MESSAGE_DIR)/src -I$(LOG_DIR)/src -I$(SQLITE_DIR)/src -I$(PAYLOAD_DIR)/src -I$(DRIVER_DIR)/src -I$(DRIVER_DIR)/src/tables
 
 # 源文件可能的后缀
 SRCEXTS := c C cc cpp CPP c++ cxx cp
@@ -128,22 +131,24 @@ endif
 
 .dep:
 	@cd $(MISC_DIR); make;
-	@cd $(MESSAGE_DIR);make;
-	@cd $(LOG_DIR);make;
-	@cd $(CLIPSCPP_DIR);make;
-	@cd $(PAYLOAD_DIR);make;
-	@cd $(DRIVER_DIR);make;
+	@cd $(MESSAGE_DIR); make;
+	@cd $(LOG_DIR); make;
+	@cd $(CLIPSCPP_DIR); make;
+	@cd $(PAYLOAD_DIR); make;
+	@cd $(DRIVER_DIR); make;
+	@cd $(SQLITE_DIR); make;
 
 .mkdir:
 	@if [ ! -d $(OBJ_DIR) ]; then mkdir -p $(OBJ_DIR); fi
 
 clean:
 	@cd $(MISC_DIR); make clean;
-	@cd $(MESSAGE_DIR);make clean;
-	@cd $(LOG_DIR);make clean;
-	@cd $(CLIPSCPP_DIR);make clean;
-	@cd $(PAYLOAD_DIR);make clean;
-	@cd $(DRIVER_DIR);make clean;
+	@cd $(MESSAGE_DIR); make clean;
+	@cd $(LOG_DIR); make clean;
+	@cd $(CLIPSCPP_DIR); make clean;
+	@cd $(PAYLOAD_DIR); make clean;
+	@cd $(DRIVER_DIR); make clean;
+	@cd $(SQLITE_DIR); make clean;
 	rm -rf $(OUT_DIR)
 
 run:$(TARGET_NAME)

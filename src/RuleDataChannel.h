@@ -10,6 +10,8 @@
 #define __RuleDataChannel_H__
 
 #include "DataChannel.h"
+#include "RulePayload.h"
+#include "rapidjson/document.h"
 
 #ifdef __cplusplus
 
@@ -38,9 +40,17 @@ public:
 
     int init();
 
-    void onRuleSync(std::string doc);
+    void onRuleSync(std::string jsondoc);
 
     bool send(int action, std::shared_ptr<Payload> payload);
+
+private:
+    bool _ParseTrigger(rapidjson::Value &trigger, std::shared_ptr<RulePayload> payload);
+    bool _ParseConditions(rapidjson::Value &conditions, std::shared_ptr<RulePayload> payload);
+    bool _ParseActions(rapidjson::Value &actions, std::shared_ptr<RulePayload> payload);
+
+    bool _ParseTimeString(const char *timestr, SlotPoint &slotpoint);
+    bool _ParsePropValue(const char *propval, SlotPoint &slotpoint);
 
 }; /* class ELinkRuleDataChannel */
 

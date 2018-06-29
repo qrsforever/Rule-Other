@@ -10,6 +10,8 @@
 #define __DeviceDataChannel_H__
 
 #include "DataChannel.h"
+#include "ClassPayload.h"
+#include "rapidjson/document.h"
 
 #ifdef __cplusplus
 
@@ -27,15 +29,28 @@ public:
 
     void onStateChanged(std::string did, std::string devName, int state);
     void onPropertyChanged(std::string did, std::string proKey, std::string proVal);
-    void onProfileSync(std::string devName, std::string doc);
 
-    bool send(int action, std::shared_ptr<Payload> payload);
+    virtual bool send(int action, std::shared_ptr<Payload> payload);
 
-private:
+protected:
     DeviceManager &mDeviceMgr;
     RuleEventHandler &mH;
 
 }; /* class DeviceDataChannel */
+
+class ElinkDeviceDataChannel : public DeviceDataChannel {
+public:
+    ElinkDeviceDataChannel();
+    ~ElinkDeviceDataChannel();
+
+    int init();
+
+    void onProfileSync(std::string devName, std::string jsondoc);
+
+private:
+    bool _ParsePropValue(const char *propval, Slot &slot);
+
+}; /* class ElinkDeviceDataChannel */
 
 } /* namespace HB */
 

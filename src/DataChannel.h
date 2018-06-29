@@ -11,6 +11,7 @@
 
 #include "Payload.h"
 
+#include <string>
 #include <memory>
 
 #ifdef __cplusplus
@@ -19,12 +20,15 @@ namespace HB {
 
 class DataChannel {
 public:
+    typedef std::shared_ptr<DataChannel> pointer;
     DataChannel() {}
     virtual ~DataChannel() {}
 
     virtual int init() = 0;
     virtual bool send(int action, std::shared_ptr<Payload> payload) = 0;
 }; /* class DataChannel */
+
+std::string& stringTrim(std::string &text);
 
 } /* namespace HB */
 

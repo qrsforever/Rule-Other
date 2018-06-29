@@ -36,7 +36,8 @@ class Condition;
 
 class SlotPoint {
 public:
-    SlotPoint(Condition &cond, std::string name) : mCellLogic("none"), mCond(cond) {}
+    SlotPoint(Condition &cond, std::string name)
+        : mSlotName(name), mCellLogic("none"), mCond(cond) {}
     SlotPoint(Condition &cond, std::string name, std::string flag);
     virtual ~SlotPoint();
     std::string mSlotName;
@@ -81,7 +82,7 @@ class LHSNode {
 public:
     LHSNode(std::string logic = "and");
     virtual ~LHSNode();
-    std::string mCondLogic; /* conditions logic: and, or */
+    std::string mCondLogic; /* conditions logic: and, or, not */
 
     std::string toString(std::string fmt = "\n  ");
 
@@ -136,6 +137,9 @@ public:
     std::string mRuleName;
     std::string mRuleID;
     std::string mVersion;
+    std::string mRawData;
+    bool mEnable;
+    bool mAuto;
 
     std::string toString(std::string fmt = "");
 

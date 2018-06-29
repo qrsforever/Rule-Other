@@ -110,8 +110,8 @@ Rule Class UML
  |--------------|                         |   mSlotLogic  |          -----> |------------|        ------>|----------|
  |  mType       |                         |    mType      |         /       | mCellLogic |       /       | nSymbol  |
  |  mCall       | ^                       |    mCls       |        /        | mSlotName  |      /        | nValue   |
- |  mID         |  \                      |    mID        |       /         | mCells     |c2---/mCells   +----------+
- |  mSlotName   |   \                     |   mSlots      |c2----/mSlots    +------------+
+ |  mID         |  \                      |    mID        |       /         | mCells     |◆ ---/mCells   +----------+
+ |  mSlotName   |   \                     |   mSlots      |◆ ----/mSlots    +------------+
  |  mSlotValue  |    -------+             +---------------+
  +--------------+    1:n    | mActions       ^                  +-----------+     mCondLogic: and/or/not
                             |                |                  |           |     mSlotLogic: and               +------------+
@@ -119,83 +119,112 @@ Rule Class UML
                           |  RHSNode   |     |          |   LHSNode    |    |     nSymbol: =,>,<,>=,<=,<>       |------------|
                           | -----------|     |          |--------------|    |                                   |   nName    |
                           |  mActions  |     |          |  mCondLogic  |   /mChildren                           |   nValue   |
-                          +------------+     +--------c1|  mConditions |  /                                     +------------+
+                          +------------+     +--------◇ |  mConditions |  /                                     +------------+
                                    ^         mConditions|  mChildren   |-/  +---------------+                           ^
                                    |                    +--------------+    |  RulePayload  |                    mSlots |  1:n
                                    +----------\                ^            |---------------|                           |
-                                               \               |            |  mRuleName    |                           c2
+                                               \               |            |  mRuleName    |                           ◆
                               +-------------+   \              |            |  mRuleID      |              +-------------------+
                               | DataChannel |    \             |     mLHS   |  mVersion     |              |  InstancePayload  |
-                              |-------------|     \            +----------c1|  mLHS         |          /---|-------------------|
-                              |             |      -----------------------c1|  mRHS         |         /    |      mInsName     |
+                              |-------------|     \            +----------◇ |  mLHS         |          /---|-------------------|
+                              |             |      -----------------------◇ |  mRHS         |         /    |      mInsName     |
                               |send(payload)|                        mLHS   |---------------|        /     |      mClsName     |
                               +-------------+                               |  toString()   |       /      |      mSlots       |
-                                  e1^ ^ e1                                  +---------------+      /       +-------------------+
+                                  △ ^ ^ △                                   +---------------+      /       +-------------------+
                                   | | | |                                             |           /
                                   | | | |                                             |          |
                   +---------------+ | | +----------------+                            |          |
                   |                 | |                  |                            |          |
-                  |                 | |                  |                            e3         |
-         +------------------+       | |     +--------------------------+        +----------+ e3--+             +-----------------+
+                  |                 | |                  |                            ◁          |
+         +------------------+       | |     +--------------------------+        +----------+ ◁ --+             +-----------------+
          | RuleDataChannel  |       | |     |    DeviceDataChannel     |        | Payload  |                   |  ClassPayload   |
-mCloudMgr|------------------|       | |     | ------------------------ |        |----------| e3----------------|-----------------|
-  +----c2|    mCloudMgr     |       | |     |       mDeviceMgr         |        |  type()  |                   |   classname     |
+mCloudMgr|------------------|       | |     | ------------------------ |        |----------| ◁ ----------------|-----------------|
+  +----◆ |    mCloudMgr     |       | |     |       mDeviceMgr         |        |  type()  |                   |   classname     |
   |      |    mHandler      |       | |     |       mHandler           |        +----------+                   |   superclass    |
   |      +------------------+       | |     |--------------------------|             |                mSlots   |   version       |
-  |               e1                | |     |    onStateChanged()      |             |                   +---c1|    mSlots       |
+  |               △                 | |     |    onStateChanged()      |             |                   +---◇ |    mSlots       |
   |               |                 | |     |    onPropertyChanged()   |-------------+               1:n |     |-----------------|
-  |               |                 | |     |    onProfileSync()       |                                 |     |   toString()    |
-  |    +------------------------+   | |     |         send()           |c2---------------------+         |     +-----------------+
-  |    |  ELinkRuleDataChannel  |   | |     +--------------------------+   mHandler            |         |
-  |    |------------------------|   | |                  c2                                    |         |
-  |    |                        |   | |                  | mDeviceMgr                          |         |
-  |    |      onRuleSync()      |   | |                  |                                     |         |          +---------------+
-  |    |        send()          |   | |                  |                                     |         |          |     Slot      |
-  |    +------------------------+   | |                  |                                     |         +--------> |---------------|
-  |                                 | |                  |                                     |                    |    mType      |
-  |                                 | |                  |                                     |                    |    mName      |
-  |                                 | |  +----------------------------------------+            |                    |   mMin/mMax   |
-  |    +-------------------------+  | |  |             DeviceManger               |            |                    |   mAllowList  |
-  |    |     CloudManager        |  | |  | -------------------------------------- |            |                    |---------------|
-  |    |-------------------------|  | |  |                                        |            |                    |   toString()  |
-  +--->|                         |  | |  |   registDeviceStateChangedCallback     |            |                    +---------------+
-       | registRuleSyncCallback  |  | |  |   registDevicePropertyChangedCallback  |            |
-       |                         |  | |  |   registDeviceProfileSyncCallback      |            |
-       +-------------------------+  | |  |        setProperty                     |            |
-                                    | |  +----------------------------------------+            |
-                                    | |                                                        |
-+-----------------------------------+ |                                                        |
-| +-----------------------------------+                      +----------------+                |
-| |                                                          | MessageHandler |                |
-| |                    +----------------------------+        |----------------|                |
-| |             +----e4|  MessageHandler::Callback  | <----c1|   mCallback    | e3---------+   |
-| |             |      +----------------------------+        +----------------+            |   |
-| |             |                                                                          |   |
-| |             |                                                                          |   |
+  |               |                 | |     |         send()           |                                 |     |   toString()    |
+  |    +------------------------+   | |     +--------------------------+◆ ---------------------+         |     +-----------------+
+  |    |  ELinkRuleDataChannel  |   | |                △          ◆        mHandler            |         |
+  |    |------------------------|   | |                |          |                            |         |
+  |    |                        |   | |                |          +----------+                 |         |
+  |    |      onRuleSync()      |   | |   +-------------------------+        |                 |         |          +---------------+
+  |    |        send()          |   | |   | ElinkDeviceDataChannel  |        |                 |         |          |     Slot      |
+  |    +------------------------+   | |   |-------------------------|        |                 |         +--------> |---------------|
+  |                                 | |   |      onProfileSync()    |        |                 |                    |    mType      |
+  |                                 | |   +-------------------------+        |                 |                    |    mName      |
+  |                                 | |                                      |                 |                    |   mMin/mMax   |
+  |    +-------------------------+  | |                           mDeviceMgr |                 |                    |   mAllowList  |
+  |    |     CloudManager        |  | |                                      v                 |                    |---------------|
+  |    |-------------------------|  | |   +----------------------------------------+           |                    |   toString()  |
+  +--->|                         |  | |   |             DeviceManger               |           |                    +---------------+
+       | registRuleSyncCallback  |  | |   | -------------------------------------- |           |
+       |                         |  | |   |                                        |           |
+       +-------------------------+  | |   |   registDeviceStateChangedCallback     |           |
+                                    | |   |   registDevicePropertyChangedCallback  |           |
+                                    | |   |   registDeviceProfileSyncCallback      |           |
++-----------------------------------+ |   |        setProperty                     |           |
+| +-----------------------------------+   +----------------------------------------+           |
+| |                                                                                            |
+| |                    +----------------------------+        +----------------+                |
+| |             +----▷ |  MessageHandler::Callback  | <----◇ | MessageHandler | ◁ ---------+   |
+| |             |      +----------------------------+        |----------------|            |   |
+| |             |                                            |   mCallback    |            |   |
+| |             |                                            +----------------+            |   |
 | |             |                                                                          |   |
 | |             |                                                                          |   v
 | |  +----------------------+                                                     +--------------------+
 | |  |  RuleEngineService   |                                                     |  RuleEventHandler  |
 | |  |----------------------|    mCore         +----------------------+    ------>|--------------------|
-| |  |     mCore            | c2-------------> |  RuleEngineCore      |   /       |    handleMessage   |
+| |  |     mCore            | ◆ -------------> |  RuleEngineCore      |   /       |    handleMessage   |
 | |  |     mServerRoot      |                  |----------------------|  /        +--------------------+
-| +--|     mDeviceChannel   |                  |    mHandler          | /mHandler           |
-+----|     mRuleChannel     |            /---c2|    mEnv              |c2                   |
-     |----------------------|           /      |----------------------|                     |
-     |    callInstancePush  |          /       |    driver()          |            +------------------+
-     |    callMessagePush   |         /        |                      |            | RuleEventThread  |
-     |    setDeviceChannel  |        /         |   handleTimer        |            |------------------|
-     |    setRuleChannel    |       /          |   handleClassSync    |            |   mMessageQueue  |
-     |                      |      /           |   handleRuleSync     |            +------------------+
-     |     handleMessage    |     |            |   handleInstanceAdd  |
-     +----------------------+     |            |   handleInstanceDel  |
-                                  |            |   handleInstancePut  |
-                                  |            +----------------------+
-                                  v
-                          +---------------+
-                          |  Environment  |
-                          |               |
-                          +---------------+
+| +--|     mDeviceChannel   |          mEnv    |    mHandler          | /mHandler     ^     |
++----|     mRuleChannel     |        +-------◆ |    mEnv              |◆              |     |
+     |----------------------|        |         |----------------------|         ------+     |
+     |    callInstancePush  |        |         |    driver()          |        /            |
+     |    callMessagePush   |        |         |                      |       /    +------------------+
+     |    setDeviceChannel  |        |         |   handleTimer        |      /     | RuleEventThread  |
+     |    setRuleChannel    |        |         |   handleClassSync    |      |     |------------------|
+     |                      |        |         |   handleRuleSync     |      |     |   mMessageQueue  |
+     |     handleMessage    |        |         |   handleInstanceAdd  |      |     +------------------+
+     +----------------------+        |         |   handleInstanceDel  |      |
+             ◇                       v         |   handleInstancePut  |      |
+      mStore |             +---------------+   +----------------------+      |
+             |             |  Environment  |                                 |
+             |             |               |                                 |
+             |             +---------------+                                 |
+             |                                                               |
+             \                                                               |
+              \                                                              |
+               \            +----------------------+                         |
+                \           |   RuleEngineStore    |                         |
+                 ---------> |----------------------|                         |
+           /--------------◆ |     mDB              |                         |
+          /        mDB      |     mHandler         |◆ -----------------------+
+         /                  |     mDefTable        |    mHandler
+        |                   |----------------------|\
+        |                   |    open/close        | \           +---------------------+
+        v                   |   updateClassTable   |  \ mTables  |      DefTable       |
++--------------+            |   updateRuleTable    |   --------> |---------------------|
+|SQLiteDatabase|            |  queryClassFilePaths |             |     mDB             |
+|              |            |  queryRuleFilePaths  |             | mUpdateHistoryList  |
+|              |            |                      |             |---------------------|
++--------------+            +----------------------+             |   updateOrInsert    |
+                                                                 |   getFilePaths      |
+                                                                 |   getDefInfos       |
+                                                                 |     _Update         |
+                                                                 +---------------------+
+                                                                     △            △
+                                                                    /              \
+                                                                   /                \
+                                                                  |                  |
+                                                                  |                  |
+                                                       +------------------+    +-----------------+
+                                                       |   DefClassTable  |    |   DefRuleTable  |
+                                                       |                  |    |                 |
+                                                       +------------------+    +-----------------+
+
 ```
 
 Local Build
@@ -220,6 +249,28 @@ Local Build
     @cd $(CLIPSCPP_DIR);make clean;
     @cd $(PAYLOAD_DIR);make clean;
     @cd $(DRIVER_DIR);make clean;
+
+
+Sync ELink Script
+=================
+
+1. 自动同步云端的profile和rules: `cd test; ./sync_from_cloud.py`
+
+2. 脚本通过请求获取信息, 其中Token可能改变, 需要定时修改
+
+```
+class ElinkRequest(object):
+
+   """Docstring for RequestHeader. """
+
+   def __init__(self, uri):
+       self._ip = "10.185.30.96"
+       self._host = "smarthome.lecloud.com"
+       self._token = "238XXXvKm3oZNGEm1Sm2T6Udm2Wnr4nikdxi6fm1kfU4Pj17RxSDAv5B2n3m5RMitfRw0b6VGLjoVsJejE4z3B9Z0Bt1cm3ewDuBBuOwLkRrUxinrb3zGkwUm4"
+       self._uri = uri
+```
+
+3. 脚本只供开发调试使用
 
 
 TODO
@@ -262,3 +313,23 @@ TODO
     std::string innerOfRulename(std::string name);
     std::string outerOfRulename(std::string name);
     ```
+
+4. 暂时不支持运行时更新设备类, 比如Light, 原因是如果该类在Rule的条件LHS中引用, 该类将无法直接删除更新.
+
+5. 运行时动态使能的设计(未设计)
+
+6. 对中文的支持(支持)
+
+7. 简单规则测试 (see TempSimulateSuite.cpp)  (finished)
+
+RULE | LHS | ACTION | PASS ?
+-----|-----|--------|:----:
+autotest1 | instance | act-control | Yes
+autotest3 | instance | act-scene | Yes
+autotest4 | instance | act-notify | Yes
+manualtest1 | fact | act-control | Yes
+manualtest3 | fact | act-control | Yes
+
+8. LHS带有`and`和`or`的规则测试
+
+9. LHS.Condition.SlotPoint带有的`&`和`|`"规则测试

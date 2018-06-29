@@ -67,6 +67,8 @@ public:
 
 CloudManager& cloudManager();
 
+std::string getClassByDeviceId(const std::string &deviceId);
+
 void tempSimulateTest(Message *msg);
 
 } /* namespace HB */
@@ -74,72 +76,3 @@ void tempSimulateTest(Message *msg);
 #endif /* __cplusplus */
 
 #endif /* __TempSimulateSuite_H__ */
-
-/* {
- *     "ruleName":"example",
- *         "ruleId":"
- *             -
- *             ",
- *         "description":"this is a example for ru
- *             le definition",
- *         "trigger":{
- *             "triggerType":"auto|manual",
- *             "switch":{
- *                 "enabled":"on",
- *                 "timeCondition":"on",
- *                 "deviceCondition ":"on",
- *                 "notify":"on",
- *                 "manual":"on"
- *             }
- *         },
- *         "conditions":{
- *             "conditionLogic":"and",
- *             "timeCondition":[
- *             {
- *                 "year":"2018",
- *                 "mouth":"10",
- *                 "day":"10|13|17",
- *                 "hour":"every",
- *                 "minute":"0",
- *                 "second":"0"
- *             }
- *             ],
- *             "deviceCondition":{
- *                 "deviceLogic":"or",
- *                 "deviceStatus":[
- *                 {
- *                     "deviceId":"0007A895C8A7",
- *                     "propName":"CurrentTemperature",
- *                     "propValue":"v>50"
- *                 },
- *                 {
- *                     "deviceId":"DC330D799327",
- *                     "propName":"onOffLight",
- *                     "propValue":"v==true"
- *                 }
- *                 ]
- *             }
- *         },
- *         "actions":{
- *             "notify":{
- *                 "tellYou":"Girlfriend Birthday!"
- *             },
- *             "deviceControl":[
- *             {
- *                 "deviceId":"0007A895C7C7",
- *                 "propName":"CurrentTemperature",
- *                 "propValue":"50"
- *             },
- *             {
- *                 "deviceId":"DC330D79932A",
- *                 "propName":"onOffLight",
- *                 "propValue":"true"
- *             }
- *             ],
- *             "manualRuleId":[
- *                 "100",
- *                 "101"
- *             ]
- *         }
- * } */
-

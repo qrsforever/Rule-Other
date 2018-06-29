@@ -219,16 +219,26 @@ std::string LHSNode::toString(std::string fmt)
     if (!childCount() && !condCount())
         return std::string();
 
+    std::string log = mCondLogic;
+    if ((mCondLogic != "and") || (mCondLogic != "or") || (mCondLogic != "not"))
+        log = "and";
+
     std::string str(fmt);
 
-    str.append("(").append(mCondLogic);
+    if (childCount() <= 1) {
+        for (size_t i = 0; i < condCount(); ++i)
+            str.append(getCond(i)->toString(fmt));
+        if (childCount() == 1)
+            str.append(getChild(0)->toString(""));
+        return str;
+    }
 
+    str.append("(").append(log);
     for (size_t i = 0; i < condCount(); ++i)
         str.append(getCond(i)->toString(fmt+"  "));
 
     for (size_t i = 0; i < childCount(); ++i)
         str.append(getChild(i)->toString(fmt+"  "));
-
     str.append(fmt).append(")");
 
     return str;
@@ -320,6 +330,8 @@ std::string RHSNode::toString(std::string fmt)
     if (!actionCount())
         return std::string();
 
+    (void)fmt;
+
     std::string str("");
     for (size_t i = 0; i < actionCount(); ++i)
         str.append(getAction(i)->toString());
@@ -330,6 +342,7 @@ RulePayload::RulePayload(std::string name, std::string id, std::string ver)
     : mRuleName(name)
     , mRuleID(id)
     , mVersion(ver)
+    , mEnable(true), mAuto(true)
 {
     mLHS = std::make_shared<LHSNode>();
     mRHS = std::make_shared<RHSNode>();
@@ -344,12 +357,15 @@ RulePayload::~RulePayload()
 std::string RulePayload::toString(std::string fmt)
 {
     std::string str(fmt);
-    str.append("(defrule ").append(mRuleID);
-    if (!mRuleName.empty())
-        str.append(" \"").append(mRuleName).append("\"");
+    str.append("(defrule ").append(mRuleName);
+    str.append(" \"").append(mRuleID).append("\"");
     str.append(mLHS->toString());
+    if (!mAuto)
+        str.append("\n  ?f <- (scene ").append(mRuleID).append(")");
     str.append("\n ").append("=>");
     str.append(mRHS->toString());
+    if (!mAuto)
+        str.append("\n  (retract ?f)");
     str.append("\n)");
     return str.append(fmt);
 }
