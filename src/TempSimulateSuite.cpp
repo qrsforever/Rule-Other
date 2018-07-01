@@ -74,6 +74,7 @@ void tempSimulateTest(Message *msg)
 {
     LOGD("msg: [%d] [%d] [%d]\n", msg->what, msg->arg1, msg->arg2);
 
+    return;
 #define TEST_INIT 0
 #define TEST_PROFILE_SYNC 1
 #define TEST_RULE_SYNC 2

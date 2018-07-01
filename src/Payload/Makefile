@@ -27,7 +27,7 @@ CXX 	:= $(CROSS_COMPILE)g++
 CC		:=
 AR		:= $(CROSS_COMPILE)ar
 CFLAGS  := $(OPTIMIZE) $(WARNINGS) $(DEFS)
-CPPFLAGS:= -std=c++11 -lclips -lUtils_log -lUtils_message -lUtils_misc -lpthread
+CPPFLAGS:= -std=c++11 -lUtils_log -lUtils_message -lUtils_misc -lpthread
 LDFLAGS := -L$(MISC_DIR)/output -L$(MESSAGE_DIR)/output -L$(LOG_DIR)/output
 INCLUDE := -I$(MISC_DIR)/src -I$(MESSAGE_DIR)/src -I$(LOG_DIR)/src
 

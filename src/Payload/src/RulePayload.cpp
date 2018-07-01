@@ -156,6 +156,7 @@ std::string Condition::toString(std::string fmt)
     } else if (mType == CT_INSTANCE) {
         str.append("?").append(mID).append(" <- ");
         str.append("(object (is-a ").append(mCls).append(")");
+        str.append(fmt + "  ").append("(ID ?id &:(eq ?id ").append(mID).append("))");
         for (size_t i = 0; i < slotCount(); ++i)
             str.append(get(i)->toString(fmt + "  "));
         str.append(fmt).append(")");
@@ -223,24 +224,22 @@ std::string LHSNode::toString(std::string fmt)
     if ((mCondLogic != "and") || (mCondLogic != "or") || (mCondLogic != "not"))
         log = "and";
 
-    std::string str(fmt);
+    std::string str("");
+    std::string indent("");
 
-    if (childCount() <= 1) {
-        for (size_t i = 0; i < condCount(); ++i)
-            str.append(getCond(i)->toString(fmt));
-        if (childCount() == 1)
-            str.append(getChild(0)->toString(""));
-        return str;
+    size_t elemCount = childCount() + condCount();
+    if (elemCount > 1) {
+        str.append(fmt).append("(").append(log);
+        indent.append("  ");
     }
 
-    str.append("(").append(log);
     for (size_t i = 0; i < condCount(); ++i)
-        str.append(getCond(i)->toString(fmt+"  "));
-
+        str.append(getCond(i)->toString(fmt+indent));
     for (size_t i = 0; i < childCount(); ++i)
-        str.append(getChild(i)->toString(fmt+"  "));
-    str.append(fmt).append(")");
+        str.append(getChild(i)->toString(fmt+indent));
 
+    if (elemCount > 1)
+        str.append(fmt).append(")");
     return str;
 }
 
@@ -271,6 +270,7 @@ std::string Action::toString(std::string fmt)
         str.append(" ").append(mSlotName);
         str.append(" ").append(mSlotValue);
     } else if (mType == AT_NOTIFY) {
+        str.append(" ").append(mID);
         str.append(" ").append(mSlotName);
         str.append(" \"").append(mSlotValue).append("\"");
     } else if (mType == AT_SCENE) {
@@ -296,9 +296,7 @@ RHSNode::~RHSNode()
 Action& RHSNode::makeAction(ActionType type, std::string name, std::string value)
 {
     Action *act = 0;
-    if (type == AT_NOTIFY)
-        act = new Action(type, ACT_NOTIFY_FUNC, name, value);
-    else if (type == AT_SCENE)
+    if (type == AT_SCENE)
         act = new Action(type, ACT_SCENE_FUNC, name, value);
     else
         act = new Action(AT_ASSERT, ACT_ASSERT_FUNC, name, value);
@@ -309,7 +307,9 @@ Action& RHSNode::makeAction(ActionType type, std::string name, std::string value
 Action& RHSNode::makeAction(ActionType type, std::string id, std::string name, std::string value)
 {
     Action *act = 0;
-    if (type == AT_CONTROL)
+    if (type == AT_NOTIFY)
+        act = new Action(type, ACT_NOTIFY_FUNC, id, name, value);
+    else if (type == AT_CONTROL)
         act = new Action(type, ACT_CONTROL_FUNC, id, name, value);
     else
         act = new Action(AT_ASSERT, ACT_ASSERT_FUNC, id, name, value);
@@ -357,8 +357,8 @@ RulePayload::~RulePayload()
 std::string RulePayload::toString(std::string fmt)
 {
     std::string str(fmt);
-    str.append("(defrule ").append(mRuleName);
-    str.append(" \"").append(mRuleID).append("\"");
+    str.append("(defrule ").append(mRuleID);
+    str.append(" \"").append(mRuleName).append("\"");
     str.append(mLHS->toString());
     if (!mAuto)
         str.append("\n  ?f <- (scene ").append(mRuleID).append(")");

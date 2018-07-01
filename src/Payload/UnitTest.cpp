@@ -32,10 +32,11 @@ void test_rule_payload()
     payload->mLHS->mCondLogic = "and"; // TOP
 
 #if 1
-    Condition &timeCond = payload->mLHS->makeCond(CT_FACT, "time", "fct_t1");
+    Condition &timeCond = payload->mLHS->makeCond(CT_FACT, "datetime", "fct_t1");
 #else
     Condition &timeCond = payload->mLHS->makeCond(CT_TEMPLATE, "datetime", "fct_t2");
 #endif
+    timeCond.makeSlot("clock");
     timeCond.makeSlot("year").append("=", "2018");
     timeCond.makeSlot("month").append("=", "06");
     timeCond.makeSlot("day", "|").append("=", "20").append("=", "21").append("=", "22");
@@ -45,6 +46,7 @@ void test_rule_payload()
     /* timeCond.makeSlot("hour", "&").append(">=", "0").append("<", "24"); */
     /* timeCond.makeSlot("minute").append("=", "0"); */
     /* timeCond.makeSlot("second").append("=", "0"); */
+    /* timeCond.makeSlot("wday"); */
 
     LHSNode &or_node = payload->mLHS->makeNode("or");
 
@@ -57,7 +59,7 @@ void test_rule_payload()
     /* Action */
     payload->mRHS->makeAction(AT_CONTROL, innerOfInsname("0007A895C7C7"), "CurrentTemperature", "50");
     payload->mRHS->makeAction(AT_CONTROL, innerOfInsname("DC330D79932A"), "onOffLight", "1");
-    payload->mRHS->makeAction(AT_NOTIFY, "tellYou", "Girlfriend Birthday");
+    payload->mRHS->makeAction(AT_NOTIFY, "10000001", "tellYou", "Girlfriend Birthday");
     payload->mRHS->makeAction(AT_SCENE, "list", "rul-100 rul-101");
 
     printf("%s\n", payload->toString().c_str());

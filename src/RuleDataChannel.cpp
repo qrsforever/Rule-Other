@@ -11,6 +11,7 @@
 #include "RuleEventTypes.h"
 #include "InstancePayload.h"
 #include "Log.h"
+#include <stdlib.h>
 
 #include "TempSimulateSuite.h" /* TODO only test */
 
@@ -183,12 +184,13 @@ bool ELinkRuleDataChannel::_ParseConditions(rapidjson::Value &conditions, std::s
             char fctID[8] = { 0 };
             for (size_t i = 0; i < timeCondition.Size(); ++i) {
                 sprintf(fctID, "fct_f%lu", i);
-                Condition &timeCond = node->makeCond(CT_FACT, "time", fctID);
+                Condition &timeCond = node->makeCond(CT_FACT, "datetime", fctID);
                 rapidjson::Value &dt = timeCondition[i];
                 if (!dt.IsObject()) {
                     LOGE("parse conditions.timeCondition[%d] error!\n", i);
                     return false;
                 }
+                timeCond.makeSlot("clock");
                 if (dt.HasMember("year") && dt["year"].IsString()) {
                     if (!_ParseTimeString(dt.GetString(), timeCond.makeSlot("year"))) {
                         LOGE("parse conditions.timeCondition[%d].year error!\n", i);
@@ -324,7 +326,9 @@ bool ELinkRuleDataChannel::_ParseActions(rapidjson::Value &actions, std::shared_
                 LOGE("parse actions.notify error!\n");
                 return false;
             }
-            payload->mRHS->makeAction(AT_NOTIFY, title.GetString(), message.GetString());
+            char id[9] = { 0 };
+            sprintf(id, "%u", rand() % 1000000000);
+            payload->mRHS->makeAction(AT_NOTIFY, id, title.GetString(), message.GetString());
         }
     }
 
@@ -410,8 +414,9 @@ void ELinkRuleDataChannel::onRuleSync(std::string jsondoc)
     }
 
     std::shared_ptr<RulePayload> payload = std::make_shared<RulePayload>(
-        innerOfRulename(ruleName.GetString()),
-        ruleId.GetString(), ruleVersion.c_str());
+        ruleName.GetString(),
+        innerOfRulename(ruleId.GetString()),
+        ruleVersion.c_str());
 
     /* parse trigger */
     if (!_ParseTrigger(trigger, payload)) {
