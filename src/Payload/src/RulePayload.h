@@ -78,11 +78,11 @@ private:
     std::vector<SlotPoint *> mSlots;
 }; /* class Condition */
 
+class RulePayload;
 class LHSNode {
 public:
-    LHSNode(std::string logic = "and");
+    LHSNode(RulePayload& rule, std::string logic = "and");
     virtual ~LHSNode();
-    std::string mCondLogic; /* conditions logic: and, or, not */
 
     std::string toString(std::string fmt = "\n  ");
 
@@ -93,7 +93,12 @@ public:
     LHSNode& makeNode(std::string logic = "and");
     LHSNode* getChild(size_t index);
     size_t childCount() { return mChildren.size(); }
+
+    std::string& condLogic() { return mCondLogic; }
+
 private:
+    RulePayload& mRule;
+    std::string mCondLogic; /* conditions logic: and, or, not */
     std::vector<Condition *> mConditions;
     std::vector<LHSNode *> mChildren;
 }; /* class LHSNode */
@@ -115,17 +120,19 @@ public:
 
 class RHSNode {
 public:
-    RHSNode();
+    RHSNode(RulePayload& rule);
     virtual ~RHSNode();
 
     std::string toString(std::string fmt="\n  ");
 
+    Action& makeAction(ActionType type, std::string value);
     Action& makeAction(ActionType type, std::string name, std::string value);
     Action& makeAction(ActionType type, std::string id, std::string name, std::string value);
     Action* getAction(size_t index);
     size_t actionCount() { return mActions.size(); }
 private:
     std::vector<Action *> mActions;
+    RulePayload& mRule;
 }; /* class RHSNode */
 
 class RulePayload : public Payload {
@@ -138,6 +145,8 @@ public:
     std::string mRuleID;
     std::string mVersion;
     std::string mRawData;
+    int mTimeout;
+    int mRetryCount;
     bool mEnable;
     bool mAuto;
 

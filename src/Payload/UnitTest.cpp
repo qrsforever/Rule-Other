@@ -60,7 +60,7 @@ void test_rule_payload()
     payload->mRHS->makeAction(AT_CONTROL, innerOfInsname("0007A895C7C7"), "CurrentTemperature", "50");
     payload->mRHS->makeAction(AT_CONTROL, innerOfInsname("DC330D79932A"), "onOffLight", "1");
     payload->mRHS->makeAction(AT_NOTIFY, "10000001", "tellYou", "Girlfriend Birthday");
-    payload->mRHS->makeAction(AT_SCENE, "list", "rul-100 rul-101");
+    payload->mRHS->makeAction(AT_SCENE, "rul-100 rul-101");
 
     printf("%s\n", payload->toString().c_str());
 }

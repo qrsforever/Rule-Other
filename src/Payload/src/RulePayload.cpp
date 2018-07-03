@@ -154,14 +154,14 @@ std::string Condition::toString(std::string fmt)
         str.append(" $?others)").append(tmp).append(fmt);
         str.append(")");
     } else if (mType == CT_INSTANCE) {
-        str.append("?").append(mID).append(" <- ");
+        /* str.append("?").append(mID).append(" <- "); */
         str.append("(object (is-a ").append(mCls).append(")");
         str.append(fmt + "  ").append("(ID ?id &:(eq ?id ").append(mID).append("))");
         for (size_t i = 0; i < slotCount(); ++i)
             str.append(get(i)->toString(fmt + "  "));
         str.append(fmt).append(")");
     } else if (mType == CT_TEMPLATE) {
-        str.append("?").append(mID).append(" <- ");
+        /* str.append("?").append(mID).append(" <- "); */
         str.append("(").append(mCls);
         for (size_t i = 0; i < slotCount(); ++i)
             str.append(get(i)->toString(fmt + "  "));
@@ -170,7 +170,9 @@ std::string Condition::toString(std::string fmt)
     return str;
 }
 
-LHSNode::LHSNode(std::string logic) : mCondLogic(logic)
+LHSNode::LHSNode(RulePayload& rule, std::string logic)
+    : mRule(rule)
+    , mCondLogic(logic)
 {
 }
 
@@ -208,7 +210,7 @@ LHSNode* LHSNode::getChild(size_t index)
 
 LHSNode& LHSNode::makeNode(std::string logic)
 {
-    LHSNode *node = new LHSNode(logic);
+    LHSNode *node = new LHSNode(mRule, logic);
     if (node)
         mChildren.push_back(node);
     return *node;
@@ -264,24 +266,24 @@ std::string Action::toString(std::string fmt)
         return std::string();
 
     std::string str(fmt);
-    str.append("(").append(mCall);
+    str.append("(send ?c ").append(mCall);
     if (mType == AT_CONTROL) {
         str.append(" ").append(mID);
         str.append(" ").append(mSlotName);
         str.append(" ").append(mSlotValue);
     } else if (mType == AT_NOTIFY) {
         str.append(" ").append(mID);
-        str.append(" ").append(mSlotName);
+        str.append(" \"").append(mSlotName).append("\"");
         str.append(" \"").append(mSlotValue).append("\"");
     } else if (mType == AT_SCENE) {
-        str.append(" ").append(mSlotName);
         str.append(" ").append(mSlotValue);
     }
     str.append(")");
     return str;
 }
 
-RHSNode::RHSNode()
+RHSNode::RHSNode(RulePayload& rule)
+    : mRule(rule)
 {
 
 }
@@ -291,6 +293,17 @@ RHSNode::~RHSNode()
     for (size_t i = 0; i < mActions.size(); ++i)
         delete mActions[i];
     mActions.clear();
+}
+
+Action& RHSNode::makeAction(ActionType type, std::string value)
+{
+    Action *act = 0;
+    if (type == AT_SCENE)
+        act = new Action(type, ACT_SCENE_FUNC, "nil", value);
+    else
+        act = new Action(AT_ASSERT, ACT_ASSERT_FUNC, "nil", value);
+    mActions.push_back(act);
+    return *act;
 }
 
 Action& RHSNode::makeAction(ActionType type, std::string name, std::string value)
@@ -332,7 +345,21 @@ std::string RHSNode::toString(std::string fmt)
 
     (void)fmt;
 
-    std::string str("");
+    std::string str(fmt);
+    str.append("(bind ?c (create-rule-context ").append(mRule.mRuleID);
+    if (mRule.mTimeout > 0) {
+        char timeout[32] = { 0 };
+        sprintf(timeout, "%d", mRule.mTimeout);
+        str.append(" ").append(timeout);
+    }
+    if (mRule.mRetryCount > 0) {
+        char retry[32] = { 0 };
+        sprintf(retry, "%d", mRule.mRetryCount);
+        str.append(" ").append(retry);
+    }
+    str.append("))");
+    str.append(fmt).append("(if (eq ?c FALSE) then (return))");
+
     for (size_t i = 0; i < actionCount(); ++i)
         str.append(getAction(i)->toString());
     return str;
@@ -341,11 +368,11 @@ std::string RHSNode::toString(std::string fmt)
 RulePayload::RulePayload(std::string name, std::string id, std::string ver)
     : mRuleName(name)
     , mRuleID(id)
-    , mVersion(ver)
+    , mVersion(ver), mTimeout(0), mRetryCount(0)
     , mEnable(true), mAuto(true)
 {
-    mLHS = std::make_shared<LHSNode>();
-    mRHS = std::make_shared<RHSNode>();
+    mLHS = std::make_shared<LHSNode>(*this);
+    mRHS = std::make_shared<RHSNode>(*this);
 }
 
 RulePayload::~RulePayload()
@@ -363,9 +390,9 @@ std::string RulePayload::toString(std::string fmt)
     if (!mAuto)
         str.append("\n  ?f <- (scene ").append(mRuleID).append(")");
     str.append("\n ").append("=>");
-    str.append(mRHS->toString());
     if (!mAuto)
         str.append("\n  (retract ?f)");
+    str.append(mRHS->toString());
     str.append("\n)");
     return str.append(fmt);
 }

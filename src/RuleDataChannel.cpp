@@ -173,7 +173,7 @@ bool ELinkRuleDataChannel::_ParseConditions(rapidjson::Value &conditions, std::s
         LOGE("parse conditions.conditionLogic error!\n");
         return false;
     }
-    payload->mLHS->mCondLogic = conditionLogic.GetString();
+    payload->mLHS->condLogic() = conditionLogic.GetString();
 
     if (conditions.HasMember("timeCondition")) {
         rapidjson::Value &timeCondition = conditions["timeCondition"];
@@ -327,7 +327,7 @@ bool ELinkRuleDataChannel::_ParseActions(rapidjson::Value &actions, std::shared_
                 return false;
             }
             char id[9] = { 0 };
-            sprintf(id, "%u", rand() % 1000000000);
+            sprintf(id, "n-%u", rand() % 1000000000);
             payload->mRHS->makeAction(AT_NOTIFY, id, title.GetString(), message.GetString());
         }
     }
@@ -364,7 +364,7 @@ bool ELinkRuleDataChannel::_ParseActions(rapidjson::Value &actions, std::shared_
                     LOGE("parse manualRuleId[%d] error!\n", i);
                     return false;
                 }
-                payload->mRHS->makeAction(AT_SCENE, "one", rul.GetString());
+                payload->mRHS->makeAction(AT_SCENE, rul.GetString());
             }
         }
     }

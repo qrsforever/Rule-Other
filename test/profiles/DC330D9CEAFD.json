@@ -1,0 +1,110 @@
+{
+    "result": {
+        "profile": {
+            "LeftBurnerState": {
+                "type": "enum",
+                "range": {
+                    "1": "无点火",
+                    "2": "点火未成功",
+                    "4": "燃烧中",
+                    "3": "点火成功"
+                },
+                "read": "T",
+                "tag": "左灶点火状态",
+                "write": "F"
+            },
+            "OlineState": {
+                "type": "enum",
+                "range": {
+                    "1": "在线",
+                    "2": "离线"
+                },
+                "read": "T",
+                "tag": "在线状态",
+                "write": "F"
+            },
+            "RightBurnerState": {
+                "type": "enum",
+                "range": {
+                    "1": "无点火",
+                    "2": "点火未成功",
+                    "4": "燃烧中",
+                    "3": "点火成功"
+                },
+                "read": "T",
+                "tag": "右灶点火状态",
+                "write": "F"
+            },
+            "WorkState": {
+                "type": "enum",
+                "range": {
+                    "1": "工作中",
+                    "2": "待机"
+                },
+                "read": "T",
+                "tag": "工作状态",
+                "write": "F"
+            },
+            "GasValue": {
+                "type": "enum",
+                "range": {
+                    "1": "安全",
+                    "2": "超标"
+                },
+                "read": "T",
+                "tag": "可燃气体值",
+                "write": "F"
+            },
+            "RightBurnerFire": {
+                "type": "enum",
+                "range": {
+                    "1": "无火",
+                    "2": "低火",
+                    "4": "高火",
+                    "3": "中火"
+                },
+                "read": "T",
+                "tag": "右灶火力",
+                "write": "F"
+            },
+            "Lampblack": {
+                "type": "enum",
+                "range": {
+                    "1": "无油烟",
+                    "2": "低油烟",
+                    "4": "高油烟",
+                    "3": "中油烟"
+                },
+                "read": "T",
+                "tag": "油烟状况",
+                "write": "F"
+            },
+            "LeftBurnerFire": {
+                "type": "enum",
+                "range": {
+                    "1": "无火",
+                    "2": "低火",
+                    "4": "高火",
+                    "3": "中火"
+                },
+                "read": "T",
+                "tag": "左灶火力",
+                "write": "F"
+            },
+            "PowerOnOff": {
+                "type": "enum",
+                "range": {
+                    "1": "开启",
+                    "2": "关闭"
+                },
+                "read": "T",
+                "tag": "开关",
+                "write": "T"
+            }
+        },
+        "id": 11,
+        "description": "燃气灶"
+    },
+    "request": "/api/device/profile",
+    "status": 1
+}

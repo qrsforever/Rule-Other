@@ -10,6 +10,7 @@
 #include "MainPublicHandler.h"
 #include "RuleEngineService.h"
 #include "RuleEventTypes.h"
+#include "RulePayload.h"
 #include "Log.h"
 
 #include <fstream>
@@ -74,7 +75,6 @@ void tempSimulateTest(Message *msg)
 {
     LOGD("msg: [%d] [%d] [%d]\n", msg->what, msg->arg1, msg->arg2);
 
-    return;
 #define TEST_INIT 0
 #define TEST_PROFILE_SYNC 1
 #define TEST_RULE_SYNC 2
@@ -83,7 +83,7 @@ void tempSimulateTest(Message *msg)
 
     switch (msg->arg1) {
         case TEST_INIT:
-            msg->arg1 = TEST_INSTANCE; //TEST_PROFILE_SYNC;  /* specify test item */
+            msg->arg1 = TEST_PROFILE_SYNC; //TEST_INSTANCE; /* specify test item */
             msg->arg2 = 0;
             break;
         case TEST_PROFILE_SYNC: /* test device profile to clp defclass */
@@ -107,19 +107,19 @@ void tempSimulateTest(Message *msg)
         case TEST_RULE_SYNC: /* test rule profile to clp defrule */
             switch (msg->arg2) {
                 case 1:
-/* PASS */          test_rule("test/rules/manualtest1.json");
+/* PASS */          test_rule("test/rules/manualtest1.json"); /* 1529578676.958.69587 */
                     break;
                 case 2:
-/* PASS */          test_rule("test/rules/manualtest3.json");
+/* PASS */          test_rule("test/rules/manualtest3.json"); /* 1529574021.272.65916 */
                     break;
                 case 3:
-/* PASS */          test_rule("test/rules/autotest1.json");
+/* PASS */          test_rule("test/rules/autotest1.json"); /* 1529578016.389.86822 */
                     break;
                 case 4:
-/* PASS */          test_rule("test/rules/autotest3.json");
+/* PASS */          test_rule("test/rules/autotest3.json"); /* 1529578775.206.24324 */
                     break;
                 case 5:
-/* PASS */          test_rule("test/rules/autotest4.json");
+/* PASS */          test_rule("test/rules/autotest4.json"); /* 1529583875.818.80441 */
                     break;
                 default:
                     ruleEngine().core()->debug(DEBUG_SHOW_RULES);
@@ -184,10 +184,10 @@ void tempSimulateTest(Message *msg)
                      * } */
                     break;
                 case 4: /* trigger manualtest1 */
-/* PASS */          ruleEngine().triggerRule("1529578676.958.69587");
+/* PASS */          ruleEngine().triggerRule(innerOfRulename("1529578676.958.69587"));
                     break;
                 case 5: /* trigger manualtest3 */
-/* PASS */          ruleEngine().triggerRule("1529574021.272.65916");
+/* PASS */          ruleEngine().triggerRule(innerOfRulename("1529574021.272.65916"));
                     break;
                 default:
                     ruleEngine().core()->debug(DEBUG_SHOW_AGENDA);

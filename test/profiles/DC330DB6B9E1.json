@@ -1,0 +1,166 @@
+{
+    "result": {
+        "profile": {
+            "FoodType": {
+                "type": "enum",
+                "range": {
+                    "1": "糕点类",
+                    "5": "蔬菜类",
+                    "4": "肉类",
+                    "3": "鱼类",
+                    "2": "面包类"
+                },
+                "read": "T",
+                "tag": "食品类别",
+                "write": "T"
+            },
+            "CookTemperature": {
+                "type": "int",
+                "tag": "烘烤温度",
+                "write": "T",
+                "range": "v >= 0 and v <= 250",
+                "step": "1",
+                "read": "T",
+                "unit": "℃"
+            },
+            "Notice": {
+                "type": "enum",
+                "range": {
+                    "1": "预约结束",
+                    "2": "发酵结束",
+                    "4": "烘烤结束",
+                    "3": "解冻结束"
+                },
+                "read": "T",
+                "tag": "提示信息",
+                "write": "F"
+            },
+            "CookMode": {
+                "type": "enum",
+                "range": {
+                    "1": "披萨模式",
+                    "10": "上烧烤+蒸汽",
+                    "12": "纯蒸汽",
+                    "7": "解冻",
+                    "5": "对流烘焙",
+                    "13": "消毒",
+                    "9": "下烧烤",
+                    "3": "热风烧烤",
+                    "11": "上下烧烤+蒸汽",
+                    "8": "发酵",
+                    "2": "传统烘焙",
+                    "4": "传统烧烤",
+                    "6": "快速预热"
+                },
+                "read": "T",
+                "tag": "烘焙模式",
+                "write": "T"
+            },
+            "Reservation": {
+                "type": "enum",
+                "range": {
+                    "1": "开启",
+                    "2": "关闭"
+                },
+                "read": "T",
+                "tag": "预约",
+                "write": "T"
+            },
+            "Cleaning": {
+                "type": "enum",
+                "range": {
+                    "1": "开启",
+                    "2": "关闭"
+                },
+                "read": "T",
+                "tag": "清洁",
+                "write": "T"
+            },
+            "ReservationTime": {
+                "type": "time",
+                "range": "unlimited",
+                "read": "T",
+                "tag": "预约时间",
+                "write": "T"
+            },
+            "PowerOnOff": {
+                "type": "enum",
+                "range": {
+                    "1": "开启",
+                    "2": "关闭"
+                },
+                "read": "T",
+                "tag": "开关状态",
+                "write": "T"
+            },
+            "ChildLock": {
+                "type": "enum",
+                "range": {
+                    "1": "开启",
+                    "2": "关闭"
+                },
+                "read": "T",
+                "tag": "童锁",
+                "write": "T"
+            },
+            "Light": {
+                "type": "enum",
+                "range": {
+                    "1": "开启",
+                    "2": "关闭"
+                },
+                "read": "T",
+                "tag": "照明",
+                "write": "T"
+            },
+            "StartPause": {
+                "type": "enum",
+                "range": {
+                    "1": "启动",
+                    "2": "暂停"
+                },
+                "read": "T",
+                "tag": "启动/暂停",
+                "write": "F"
+            },
+            "CookTime": {
+                "type": "time",
+                "range": "unlimited",
+                "read": "T",
+                "tag": "烘烤时间",
+                "write": "T"
+            },
+            "OnlineState": {
+                "type": "enum",
+                "range": {
+                    "1": "在线",
+                    "2": "离线"
+                },
+                "read": "T",
+                "tag": "在线状态",
+                "write": "F"
+            },
+            "RemainingTime": {
+                "type": "time",
+                "range": "unlimited",
+                "read": "T",
+                "tag": "剩余时间",
+                "write": "T"
+            },
+            "CookState": {
+                "type": "enum",
+                "range": {
+                    "1": "正在烘焙",
+                    "2": "烘焙结束"
+                },
+                "read": "T",
+                "tag": "烘焙状态",
+                "write": "F"
+            }
+        },
+        "id": 14,
+        "description": "智能烤箱"
+    },
+    "request": "/api/device/profile",
+    "status": 1
+}

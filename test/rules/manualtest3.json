@@ -1,0 +1,31 @@
+{
+    "result": {
+        "retInfo": "规则查询成功",
+        "rule": {
+            "actions": {
+                "deviceControl": [
+                    {
+                        "propName": "WorkMode",
+                        "deviceId": "0007A895C8A7",
+                        "propValue": "2"
+                    }
+                ]
+            },
+            "ruleId": "1529574021.272.65916",
+            "description": "空气净化器调成自动模式",
+            "trigger": {
+                "switch": {
+                    "deviceCondition": "off",
+                    "timeCondition": "off",
+                    "enabled": "on",
+                    "notify": "off",
+                    "manual": "on"
+                },
+                "triggerType": "manual"
+            },
+            "ruleName": "manualtest3"
+        }
+    },
+    "request": "/api/rule/query",
+    "status": 1
+}
