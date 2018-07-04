@@ -68,6 +68,8 @@ std::string getClassByDeviceId(const std::string &deviceId)
         return std::string("AirClean1");
     if (deviceId == "0007A895C7C7")
         return std::string("AirClean2");
+    if (deviceId == "00124B00146D743D00")
+        return std::string("SmogAlarm");
     return std::string("Light");
 }
 
@@ -97,6 +99,8 @@ void tempSimulateTest(Message *msg)
                 case 3:
 /* PASS */          test_profile(getClassByDeviceId("04FA8309822A"), "test/profiles/04FA8309822A.json");
                     break;
+                case 4:
+                    test_profile(getClassByDeviceId("00124B00146D743D00"), "test/profiles/00124B00146D743D00.json");
                 default:
                     ruleEngine().core()->debug(DEBUG_SHOW_CLASSES);
                     msg->arg1 = TEST_RULE_SYNC; /* enter next test: rule */

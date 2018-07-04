@@ -7,6 +7,139 @@ categories: [ Local ]
 
 ---
 
+Elink
+=====
+
+Rule Schema
+-----------
+
+```:json
+        {
+            "ruleName":"example",
+            "ruleId":"123456",
+            "description":"this is a example for rule definition",
+            "trigger":{
+                "triggerType":"auto|manual",
+                "switch":{
+                    "enabled":"on",
+                    "timeCondition":"on",
+                    "deviceCondition ":"on",
+                    "notify":"on",
+                    "manual":"on"
+                }
+            },
+            "conditions":{
+                "conditionLogic":"and",
+                "timeCondition":[
+                {
+                    "year":"2018",
+                    "month":"10",
+                    "day":"10|13|17",
+                    "hour":"every",
+                    "minute":"0",
+                    "second":"0"
+                }
+                ],
+                "deviceCondition":{
+                    "deviceLogic":"or",
+                    "deviceStatus":[
+                    {
+                        "deviceId":"0007A895C8A7",
+                        "propName":"CurrentTemperature",
+                        "propValue":"v>50"
+                    },
+                    {
+                        "deviceId":"DC330D799327",
+                        "propName":"onOffLight",
+                        "propValue":"v==true"
+                    }
+                    ]
+                }
+            },
+            "actions":{
+                "notify":{
+                    "title": "xxx",
+                    "message":"Girlfriend Birthday!"
+                },
+                "deviceControl":[
+                {
+                    "deviceId":"0007A895C7C7",
+                    "propName":"CurrentTemperature",
+                    "propValue":"50"
+                },
+                {
+                    "deviceId":"DC330D79932A",
+                    "propName":"onOffLight",
+                    "propValue":"true"
+                }
+                ],
+                "manualRuleId":[
+                    "1528374365.417.48775",
+                    "1528424679.929.67961"
+                ]
+            }
+        }
+```
+
+Device Schema
+-------------
+
+```
+         {
+            "result": {
+                "description": "烟雾报警器",
+                "id": 12,
+                "profile": {
+                    "OnlineState": {
+                        "tag": "在线状态",
+                        "write": "F",
+                        "type": "enum",
+                        "read": "T",
+                        "range": {
+                            "2": "离线",
+                            "1": "在线"
+                        }
+                    },
+                    "PowerOnOff": {
+                        "tag": "开关状态",
+                        "write": "F",
+                        "type": "enum",
+                        "read": "T",
+                        "range": {
+                            "2": "关闭",
+                            "1": "开启"
+                        }
+                    },
+                    "SecurityControl": {
+                        "tag": "布防开关",
+                        "write": "T",
+                        "type": "enum",
+                        "read": "T",
+                        "range": {
+                            "2": "关闭",
+                            "1": "开启"
+                        }
+                    },
+                    "Battery": {
+                        "tag": "剩余电量",
+                        "write": "F",
+                        "type": "enum",
+                        "read": "T",
+                        "range": {
+                            "2": "正常",
+                            "1": "低电量"
+                        }
+                    }
+                }
+            },
+            "status": 1,
+            "request": "/api/device/profile"
+        }
+```
+
+*规则引擎的设计参考了Elink的json schema, 但设计上并不会受限该schema, 如果不加新的特殊需求, 设计模型不会大改.*
+
+
 Rule Model Design
 =================
 
@@ -67,41 +200,71 @@ LHSNode Tree
 
 ```
 
-Fig Sample
+Clp Struct
 ----------
 
 ```
-                            ruleID
-                              ^                   -----> comment, here we want is rule name.
-                              |                  /
-                              |                 /                  -----> MultiSlot
-                    (defrule rul-0001 "this is an example"        /
-          +-------    (and                                       /
-          |             (and                -----------------------------------------------
-          |               ?fct_t1 <- (time ?year ?month ?day ?hour ?minute ?second $?others)      -----+
-          |    1          (test (= ?year 2018))                                                        |
-          |  layer        (test (= ?month 06))                                                         | Condition: Fact
-          |               (test (or (= ?day 20) (= ?day 21) (= ?day 22) (= ?day 23) ))                 |
-          |             )                                               -----------\              -----+
-  LHSNode |             (or                                                         \------> Cell
-          |    2          ?ins-0007A895C8A7 <- (object (is-a TempSensor)                          -----+
-          |  layer          (CurrentTemperature ?CurrentTemperature &:(> ?CurrentTemperature 50)       |
-          |               )                                                                            |
-          |               ?ins-DC330D799327 <- (object (is-a Light)                                    | Condition: Instance
-          |                 (onOffLight ?onOffLight &:(= ?onOffLight 1))                               |
-          |               )       \                   -----------------                                |
-          |             )          \                             \                                -----+
-          +-------    )             --------> SlotPoint           \ -------> Cell
-                     =>
-          +-------    (act-control ins-0007A895C7C7 CurrentTemperature 50)   ---> action: device control
-  RHSNode |           (act-control ins-DC330D79932A onOffLight 1)
-          |           (act-notify tellYou "Girlfriend Birthday")             ---> action: message notify
-          +-------    (act-scene array rul-100 rul-101)                      ---> action: active scene
+                                ruleID
+                                  ^                   -----> comment, here we want is rule name.
+                                  |                  /
+                                  |                 /                    -----> MultiSlot
+                    (defrule rul-0001 "this is an example"              /
+          +--------   (and                                             /
+          |             (and                   -------------------------------------------------------
+          |               ?fct_t1 <- (datetime ?clock ?year ?month ?day ?hour ?minute ?second $?others) ---+
+          |      1        (test (= ?year 2018))                                                            |  Condition: Fact
+          |    layer      (test (= ?month 06))                                                             | (not use Template)
+          |               (test (or (= ?day 20) (= ?day 21) (= ?day 22) ))                              ---+
+          |             )                                    -----------\
+          |             (or                                              \------> Cell
+  LHSNode |               (object (is-a TempSensor)                                                     ---+
+          |                 (ID ?id &:(eq ?id ins-0007A895C8A7))                                           |
+          |      2          (CurrentTemperature ?CurrentTemperature &:(> ?CurrentTemperature 50))          |
+          |    layer      )                                                                                |
+          |               (object (is-a Light)                                                             | Condition: Instance
+          |                 (ID ?id &:(eq ?id ins-DC330D799327))          /-----> Cell                     |
+          |                 (onOffLight ?onOffLight &:(= ?onOffLight 1)) /                                 |
+          |               )       \                   -------------------                               ---+
+          |             )          \                           +--> timeout-ms
+          +--------   )             --------> SlotPoint        |  +--> retry-count
+                     =>                                        |  |
+          +--------   (bind ?c (create-rule-context rul-0001 5000 5))   ------> create the rule context
+          |           (if (eq ?c FALSE) then (return))
+          |           (send ?c act-control ins-0007A895C7C7 CurrentTemperature 50)   ---> action: device control
+  RHSNode |           (send ?c act-control ins-DC330D79932A onOffLight 1)
+          |           (send ?c act-notify 10000001 "tellYou" "Girlfriend Birthday")  ---> action: message notify
+          +---------  (send ?c act-scene rul-1000)                                   ---> action: active scene
                     )
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+                                                     /---> DEVICE is superclass
+          + --------------  (defclass SmogAlarm     /
+          |                   (is-a DEVICE) -------/
+          |             /---- (role concrete) (pattern-match reactive) ----> can triggered by rule
+  Class   |            v      (slot OnlineState (type NUMBER) (allowed-numbers 2 1))
+          | (not abstract)    (slot PowerOnOff (type INTEGER) (allowed-numbers 2 1))
+          |                   (slot SecurityLevel (type SYMBOL) (allowed-symbols low normal high))
+          |                   (slot Battery (type NUMBER) (allowed-numbers 2 1))
+          +---------------- )                        /
+                                                    /
+                                                   v
+                                          (INTEGER or FLOAT)
+
 ```
 
+1. 定义Rule; (defrule rule-name ${LHSNode} => ${RHSNode})
+2. LHSNode := [Condition+], Condition可以由Fact和Object(instance)组成
+3. 一个Fact或者Object由一个或多个单槽(SlotPoint)/多槽组成: Fact := [SingleSlot+], Object := [(SingleSlot|MultiSlot)+]
+4. 一个槽点比如Fact中的"年|月|日|时|分|秒", Object中的属性, 槽点(属性)值可进行逻辑比较, 构成触发点, 取名为Cell
+5. 时间Fact不采用Template原因在程序实现更方便
+6. 一旦RHSNode被执行, 首先为该Rule创建Context, Context销毁之时就是Rule的执行得到结束之日(异步).
+
+**TODO**
+1. 一个Rule在Context没有销毁之前多次触发, 并无响应, 只有等到Context得到success结果或者超时结束,下次触发Rule方有效.
+
 Rule Class UML
-==============
+--------------
 
 ```
                                           +---------------+
@@ -146,7 +309,7 @@ mCloudMgr|------------------|       | |     | ------------------------ |        
   |               |                 | |     |    onPropertyChanged()   |-------------+               1:n |     |-----------------|
   |               |                 | |     |         send()           |                                 |     |   toString()    |
   |    +------------------------+   | |     +--------------------------+◆ ---------------------+         |     +-----------------+
-  |    |  ELinkRuleDataChannel  |   | |                △          ◆        mHandler            |         |
+  |    |  ElinkRuleDataChannel  |   | |                △          ◆        mHandler            |         |
   |    |------------------------|   | |                |          |                            |         |
   |    |                        |   | |                |          +----------+                 |         |
   |    |      onRuleSync()      |   | |   +-------------------------+        |                 |         |          +---------------+
@@ -177,7 +340,7 @@ mCloudMgr|------------------|       | |     | ------------------------ |        
 | |  +----------------------+                                                     +--------------------+
 | |  |  RuleEngineService   |                                                     |  RuleEventHandler  |
 | |  |----------------------|    mCore         +----------------------+    ------>|--------------------|
-| |  |     mCore            | ◆ -------------> |  RuleEngineCore      |   /       |    handleMessage   |
+| |  |     mCore            | ◆ -------------> |    RuleEngineCore    |   /       |    handleMessage   |
 | |  |     mServerRoot      |                  |----------------------|  /        +--------------------+
 | +--|     mDeviceChannel   |          mEnv    |    mHandler          | /mHandler     ^     |
 +----|     mRuleChannel     |        +-------◆ |    mEnv              |◆              |     |
@@ -192,9 +355,9 @@ mCloudMgr|------------------|       | |     | ------------------------ |        
              ◇                       v         |   handleInstancePut  |      |
       mStore |             +---------------+   +----------------------+      |
              |             |  Environment  |                                 |
-             |             |               |                                 |
-             |             +---------------+                                 |
-             |                                                               |
+             |             |               |--\                              |
+             |             +---------------+   \  CLP                        |
+             |              Clipscpp            ------> clips6.30            |
              \                                                               |
               \                                                              |
                \            +----------------------+                         |
@@ -227,8 +390,89 @@ mCloudMgr|------------------|       | |     | ------------------------ |        
 
 ```
 
+1. 核心驱动: RuleEngineService RuleEngineCore RuleEngineStore
+2. 数据通道: RuleDataChannel DeviceDataChannel
+3. 载体转换: ClassPayload InstancePayload RulePayload
+4. 辅助工具: MessageHandler SQLiteDatabase Log
+
+Clp Script Design
+-----------------
+
+```
+                                                                  (auto)     (manual)
+                                          device                 property
+                      profile  rule   online offline             changed      scene
+               TestCase --------------------------------------------------------------------------------------------------->
+                         |       |       |      |        ║          |           |
+                         |       |       |      |    mainHandler    |           |
+            mainHander() |       |       |      |        ║          |           |
+                v        v       v       v      v        ▼          v           v
+   MainThread ------------------------------------------------------------------------------------------------------------->
+                 \    profile  rule      \      \          ║        \           \
+                  \      json    json     \      \     ruleHandler   \           \
+                   \        \      \       |      |        ║          |           |
+                    \        \      \      |      |        ▼          |           |
+                     \        \      \     v  T   v     T         T   v     T     v   T         T         T         T
+      RuleThread     --------------+----------+---------+---------+---+-----+---------+---------+---------+---------+----->
+                      ^            T      add |  del    |         |   \     |     /   |         |         |         |
+                  ruleHander()     |          |         |         |    \    |    /    |         |         |         |
+                                   |          |         |         |     |   |   |     |         |         |         |
+                                   +--\       +--\      +--\      +--\  v   v   v  /--+      /--+      /--+      /--+
+                                       \          \         \         \+---------+/         /         /         /
+ T: timer (default 1s)                  \          \         \         | refresh |         /         /         /
+                                         ----------------------------->|         |<----------------------------
+                                                                       |   run   |
+                                                                       +---------+
+                                                                            |               +--------+
+             (LHS)                                                          |         ----▷ |  USER  |
+             +--------------------------------------------------------------+        /      +--------+
+   salience  |                                                                      /            △
+             |                        +-------------------+                        /             |
+             v                        |   RuleContext     |                       /              |
+        +--------+                    |-------------------|                      /              /
+    +---| Rule-1 |                    |   rule-id         |                     /              /
+    |   +--------+                    |   timeout-ms      |                +---------+  +-----------+        +----------------+
+    |                                 |   retry-count     |--------------▷ | Context |  |  DEVICE   |        |  SmogAlarm     |
+    +-> +--------+                    |   current-try     |                |         |  |-----------|        |----------------|
+    +---| Rule-2 |                    |   start-time      |                +---------+  |   ID      |◁ ------|   OnlineState  |
+    |   +--------+                    |   unanswer-list   |                             |   UUID    |        |   PowerOnOff   |
+    |                                 |   response-rules  |                             |   Class   |        |   Battery      |
+    +-> +--------+                    |-------------------|                             +-----------+        +----------------+
+    +---| Rule-3 |                    |   try-again       |
+    |   +--------+                    |   unanswer-count  |
+    |                                 |   act-control     |
+    +-> +--------+                    |   act-notify      |
+        | Rule-4 |                    |   act-scene       |
+        +--------+                    +-------------------+
+            |                                      +-------------------------+----------------------+------------+
+            |                                      |                         |                      |            |
+            |          Action                      |                         |                      |            v
+            +------------------------- >  act-control ------------> act-notify -----------> act-scene   |   send-message
+            (RHS)                             |  ^                      |   ^                   /       |        |
+                                              |  | true                 |   | true             /        |        | success
+                                              |  |                      |   |                 v                  |   or
+                                              |  +------>  make-rule    |   +------>  make-rule                  |  fail
+                                              |  | false  (response)    |   | false  (response)                  |
+                                              v  |                      v   |                                    v
+          RuleEngineService ---------------------------------------------------------------------------------------------->
+                                              ins-push                  txt-push                              msg-push
+
+
+
+```
+
+1. 规则分为联动(Auto)和手动(Manual)两种, 联动: 设备属性变化触发相关规则 手动: 触发场景,比如回家模式
+2. RuleThread是专门的规则线程, 作用: 延时Timer以及RefreshAgenda/Run(触发Rule,执行Action), 这样设计相对简单, 避免Rule多线程问题
+3. 脚本Actions中的方法act-control/act-notify会调用RuleEngineService中的ins-push/txt-push(返回false:异步, 返回true:同步)
+4. 如果ins-push/txt-push是异步(return:false)方式, 则act-xxx会自动创建等待结果的规则, 当父规则Context销毁, 该auto规则删除
+5. 如果联动规则触发了场景规则被调用, act-scene也会自动创建等待(子规则)结果规则, 且它触发的规则也会创建Context.
+
+
+Others
+======
+
 Local Build
-===========
+-----------
 
 1. make
 
@@ -251,8 +495,8 @@ Local Build
     @cd $(DRIVER_DIR);make clean;
 
 
-Sync ELink Script
-=================
+Sync Elink Script
+-----------------
 
 1. 自动同步云端的profile和rules: `cd test; ./sync_from_cloud.py`
 

@@ -48,7 +48,7 @@ void InitThread::run()
      *****************************/
     ruleEngine().setServerRoot("RuleDriver/clips");
     ruleEngine().setDeviceChannel(std::make_shared<ElinkDeviceDataChannel>());
-    ruleEngine().setRuleChannel(std::make_shared<ELinkRuleDataChannel>());
+    ruleEngine().setRuleChannel(std::make_shared<ElinkRuleDataChannel>());
     ruleEngine().init();
 
 

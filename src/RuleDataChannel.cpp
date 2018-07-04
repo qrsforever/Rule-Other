@@ -34,24 +34,24 @@ bool RuleDataChannel::send(int action, std::shared_ptr<Payload> payload)
     return false;
 }
 
-ELinkRuleDataChannel::ELinkRuleDataChannel()
+ElinkRuleDataChannel::ElinkRuleDataChannel()
 {
 
 }
 
-ELinkRuleDataChannel::~ELinkRuleDataChannel()
+ElinkRuleDataChannel::~ElinkRuleDataChannel()
 {
 
 }
 
-int ELinkRuleDataChannel::init()
+int ElinkRuleDataChannel::init()
 {
     LOGTT();
 
     /* regist rule sync json doc from cloud */
     mCloudMgr.registRuleSyncCallback(
         std::bind(
-            &ELinkRuleDataChannel::onRuleSync,
+            &ElinkRuleDataChannel::onRuleSync,
             this,
             std::placeholders::_1)
         );
@@ -59,7 +59,7 @@ int ELinkRuleDataChannel::init()
     return 0;
 }
 
-bool ELinkRuleDataChannel::_ParseTrigger(rapidjson::Value &trigger, std::shared_ptr<RulePayload> payload)
+bool ElinkRuleDataChannel::_ParseTrigger(rapidjson::Value &trigger, std::shared_ptr<RulePayload> payload)
 {
     rapidjson::Value &triggerType = trigger["triggerType"];
     if (!triggerType.IsString()) {
@@ -88,7 +88,7 @@ bool ELinkRuleDataChannel::_ParseTrigger(rapidjson::Value &trigger, std::shared_
     return true;
 }
 
-bool ELinkRuleDataChannel::_ParseTimeString(const char *ctimestr, SlotPoint &slotpoint)
+bool ElinkRuleDataChannel::_ParseTimeString(const char *ctimestr, SlotPoint &slotpoint)
 {
     char *timestr = (char*)ctimestr;
     char *t_or = strtok(timestr,"|");
@@ -129,7 +129,7 @@ bool ELinkRuleDataChannel::_ParseTimeString(const char *ctimestr, SlotPoint &slo
     return true;
 }
 
-bool ELinkRuleDataChannel::_ParsePropValue(const char *cpropval, SlotPoint &slotpoint)
+bool ElinkRuleDataChannel::_ParsePropValue(const char *cpropval, SlotPoint &slotpoint)
 {
     char *propval = (char*)cpropval;
     char *equ = strstr(propval, "==");
@@ -166,7 +166,7 @@ bool ELinkRuleDataChannel::_ParsePropValue(const char *cpropval, SlotPoint &slot
     return false;
 }
 
-bool ELinkRuleDataChannel::_ParseConditions(rapidjson::Value &conditions, std::shared_ptr<RulePayload> payload)
+bool ElinkRuleDataChannel::_ParseConditions(rapidjson::Value &conditions, std::shared_ptr<RulePayload> payload)
 {
     rapidjson::Value &conditionLogic = conditions["conditionLogic"];
     if (!conditionLogic.IsString()) {
@@ -315,7 +315,7 @@ bool ELinkRuleDataChannel::_ParseConditions(rapidjson::Value &conditions, std::s
     return true;
 }
 
-bool ELinkRuleDataChannel::_ParseActions(rapidjson::Value &actions, std::shared_ptr<RulePayload> payload)
+bool ElinkRuleDataChannel::_ParseActions(rapidjson::Value &actions, std::shared_ptr<RulePayload> payload)
 {
     if (actions.HasMember("notify")) {
         rapidjson::Value &notify = actions["notify"];
@@ -371,7 +371,7 @@ bool ELinkRuleDataChannel::_ParseActions(rapidjson::Value &actions, std::shared_
     return true;
 }
 
-void ELinkRuleDataChannel::onRuleSync(std::string jsondoc)
+void ElinkRuleDataChannel::onRuleSync(std::string jsondoc)
 {
     LOGD("jsondoc:\n%s\n", jsondoc.c_str());
     rapidjson::Document doc;
@@ -451,7 +451,7 @@ void ELinkRuleDataChannel::onRuleSync(std::string jsondoc)
     mH.sendMessage(mH.obtainMessage(RET_RULE_SYNC, payload));
 }
 
-bool ELinkRuleDataChannel::send(int action, std::shared_ptr<Payload> payload)
+bool ElinkRuleDataChannel::send(int action, std::shared_ptr<Payload> payload)
 {
     (void)action;
     (void)payload;

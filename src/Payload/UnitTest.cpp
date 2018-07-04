@@ -29,7 +29,7 @@ void test_rule_payload()
     std::shared_ptr<RulePayload> payload = std::make_shared<RulePayload>("example", innerOfRulename("0001"), "1.0.0");
 
     /* Condition */
-    payload->mLHS->mCondLogic = "and"; // TOP
+    payload->mLHS->condLogic() = "and"; // TOP
 
 #if 1
     Condition &timeCond = payload->mLHS->makeCond(CT_FACT, "datetime", "fct_t1");
@@ -60,7 +60,7 @@ void test_rule_payload()
     payload->mRHS->makeAction(AT_CONTROL, innerOfInsname("0007A895C7C7"), "CurrentTemperature", "50");
     payload->mRHS->makeAction(AT_CONTROL, innerOfInsname("DC330D79932A"), "onOffLight", "1");
     payload->mRHS->makeAction(AT_NOTIFY, "10000001", "tellYou", "Girlfriend Birthday");
-    payload->mRHS->makeAction(AT_SCENE, "rul-100 rul-101");
+    payload->mRHS->makeAction(AT_SCENE, "rul-100");
 
     printf("%s\n", payload->toString().c_str());
 }

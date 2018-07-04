@@ -33,10 +33,10 @@ protected:
     RuleEventHandler &mH;
 }; /* class RuleDataChannel */
 
-class ELinkRuleDataChannel : public RuleDataChannel {
+class ElinkRuleDataChannel : public RuleDataChannel {
 public:
-    ELinkRuleDataChannel();
-    ~ELinkRuleDataChannel();
+    ElinkRuleDataChannel();
+    ~ElinkRuleDataChannel();
 
     int init();
 
@@ -52,7 +52,7 @@ private:
     bool _ParseTimeString(const char *timestr, SlotPoint &slotpoint);
     bool _ParsePropValue(const char *propval, SlotPoint &slotpoint);
 
-}; /* class ELinkRuleDataChannel */
+}; /* class ElinkRuleDataChannel */
 
 } /* namespace HB */
 
