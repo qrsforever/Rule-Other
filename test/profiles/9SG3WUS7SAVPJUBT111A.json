@@ -1,9 +1,9 @@
 {
     "result": {
-        "profile": {},
+        "description": "海尔视频摄像头",
         "id": 20,
-        "description": "海尔视频摄像头"
+        "profile": {}
     },
-    "request": "/api/device/profile",
-    "status": 1
+    "status": 1,
+    "request": "/api/device/profile"
 }

@@ -1,153 +1,153 @@
 {
     "result": {
+        "description": "智能空调",
+        "id": 15,
         "profile": {
-            "Heating": {
-                "type": "enum",
-                "range": {
-                    "1": "开启",
-                    "2": "关闭"
-                },
-                "read": "T",
-                "tag": "电加热",
-                "write": "T"
-            },
             "OnlineState": {
-                "type": "enum",
-                "range": {
-                    "1": "在线",
-                    "2": "离线"
-                },
-                "read": "T",
                 "tag": "在线状态",
-                "write": "F"
-            },
-            "Humidification": {
+                "write": "F",
                 "type": "enum",
+                "read": "T",
                 "range": {
-                    "1": "开启",
-                    "2": "关闭"
-                },
-                "read": "T",
-                "tag": "加湿",
-                "write": "T"
-            },
-            "HumuditySetting": {
-                "type": "int",
-                "tag": "湿度",
-                "write": "T",
-                "range": "v >= 30 and v <= 90",
-                "step": "1",
-                "read": "T",
-                "unit": "%"
-            },
-            "SelfCleaning": {
-                "type": "enum",
-                "range": {
-                    "1": "开启",
-                    "2": "关闭"
-                },
-                "read": "T",
-                "tag": "自清扫",
-                "write": "T"
-            },
-            "PowerOnOff": {
-                "type": "enum",
-                "range": {
-                    "1": "开启",
-                    "2": "关闭"
-                },
-                "read": "T",
-                "tag": "开关",
-                "write": "T"
-            },
-            "WindSpeed": {
-                "type": "enum",
-                "range": {
-                    "1": "高",
-                    "2": "中",
-                    "4": "自动",
-                    "3": "低"
-                },
-                "read": "T",
-                "tag": "风速",
-                "write": "T"
-            },
-            "FreshAir": {
-                "type": "enum",
-                "range": {
-                    "1": "开启",
-                    "2": "关闭"
-                },
-                "read": "T",
-                "tag": "新风",
-                "write": "T"
-            },
-            "UpDownWind": {
-                "type": "enum",
-                "range": {
-                    "1": "开启",
-                    "2": "关闭"
-                },
-                "read": "T",
-                "tag": "上下摆风",
-                "write": "T"
-            },
-            "LeftRightWind": {
-                "type": "enum",
-                "range": {
-                    "1": "开启",
-                    "2": "关闭"
-                },
-                "read": "T",
-                "tag": "左右摆风",
-                "write": "T"
-            },
-            "Lock": {
-                "type": "enum",
-                "range": {
-                    "1": "开启",
-                    "2": "关闭"
-                },
-                "read": "T",
-                "tag": "电子锁",
-                "write": "T"
-            },
-            "TemSetting": {
-                "type": "int",
-                "tag": "湿度",
-                "write": "T",
-                "range": "v >= 16 and v <= 30",
-                "step": "1",
-                "read": "T",
-                "unit": "℃"
+                    "2": "离线",
+                    "1": "在线"
+                }
             },
             "Anion": {
-                "type": "enum",
-                "range": {
-                    "1": "开启",
-                    "2": "关闭"
-                },
-                "read": "T",
                 "tag": "负离子",
-                "write": "T"
+                "write": "T",
+                "type": "enum",
+                "read": "T",
+                "range": {
+                    "2": "关闭",
+                    "1": "开启"
+                }
             },
             "WorkMode": {
+                "tag": "工作模式",
+                "write": "T",
                 "type": "enum",
+                "read": "T",
                 "range": {
-                    "1": "智能",
-                    "5": "送风",
+                    "2": "除湿",
                     "4": "制热",
                     "3": "制冷",
-                    "2": "除湿"
-                },
+                    "5": "送风",
+                    "1": "智能"
+                }
+            },
+            "SelfCleaning": {
+                "tag": "自清扫",
+                "write": "T",
+                "type": "enum",
                 "read": "T",
-                "tag": "工作模式",
-                "write": "T"
+                "range": {
+                    "2": "关闭",
+                    "1": "开启"
+                }
+            },
+            "TemSetting": {
+                "tag": "湿度",
+                "type": "int",
+                "range": "v >= 16 and v <= 30",
+                "step": "1",
+                "write": "T",
+                "unit": "℃",
+                "read": "T"
+            },
+            "Lock": {
+                "tag": "电子锁",
+                "write": "T",
+                "type": "enum",
+                "read": "T",
+                "range": {
+                    "2": "关闭",
+                    "1": "开启"
+                }
+            },
+            "Heating": {
+                "tag": "电加热",
+                "write": "T",
+                "type": "enum",
+                "read": "T",
+                "range": {
+                    "2": "关闭",
+                    "1": "开启"
+                }
+            },
+            "HumuditySetting": {
+                "tag": "湿度",
+                "type": "int",
+                "range": "v >= 30 and v <= 90",
+                "step": "1",
+                "write": "T",
+                "unit": "%",
+                "read": "T"
+            },
+            "FreshAir": {
+                "tag": "新风",
+                "write": "T",
+                "type": "enum",
+                "read": "T",
+                "range": {
+                    "2": "关闭",
+                    "1": "开启"
+                }
+            },
+            "Humidification": {
+                "tag": "加湿",
+                "write": "T",
+                "type": "enum",
+                "read": "T",
+                "range": {
+                    "2": "关闭",
+                    "1": "开启"
+                }
+            },
+            "LeftRightWind": {
+                "tag": "左右摆风",
+                "write": "T",
+                "type": "enum",
+                "read": "T",
+                "range": {
+                    "2": "关闭",
+                    "1": "开启"
+                }
+            },
+            "UpDownWind": {
+                "tag": "上下摆风",
+                "write": "T",
+                "type": "enum",
+                "read": "T",
+                "range": {
+                    "2": "关闭",
+                    "1": "开启"
+                }
+            },
+            "PowerOnOff": {
+                "tag": "开关",
+                "write": "T",
+                "type": "enum",
+                "read": "T",
+                "range": {
+                    "2": "关闭",
+                    "1": "开启"
+                }
+            },
+            "WindSpeed": {
+                "tag": "风速",
+                "write": "T",
+                "type": "enum",
+                "read": "T",
+                "range": {
+                    "2": "中",
+                    "4": "自动",
+                    "3": "低",
+                    "1": "高"
+                }
             }
-        },
-        "id": 15,
-        "description": "智能空调"
+        }
     },
-    "request": "/api/device/profile",
-    "status": 1
+    "status": 1,
+    "request": "/api/device/profile"
 }

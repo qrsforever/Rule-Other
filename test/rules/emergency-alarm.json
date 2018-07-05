@@ -2,17 +2,17 @@
     "result": {
         "retInfo": "规则查询成功",
         "rule": {
-            "ruleId": "1529583875.818.80441",
-            "description": "袁威测试空气净化器进入睡眠模式",
+            "ruleId": "0000000000.000.00002",
+            "description": "当紧急按钮或者烟雾报警触发时, 通知用户",
             "trigger": {
                 "switch": {
                     "enabled": "on",
                     "notify": "on",
                     "timeCondition": "off",
                     "deviceCondition": "on",
-                    "manual": "off"
+                    "manual": "on"
                 },
-                "triggerType": "auto|manual"
+                "triggerType": "auto"
             },
             "conditions": {
                 "conditionLogic": "",
@@ -20,18 +20,23 @@
                     "deviceStatus": [
                         {
                             "propValue": "v==1",
-                            "deviceId": "0007A895C8A7",
-                            "propName": "WorkMode"
+                            "deviceId": "38D269B0EA1886D3E200",
+                            "propName": "PowerOnOff"
+                        },
+                        {
+                            "propValue": "v==1",
+                            "deviceId": "00124B00146D743D00",
+                            "propName": "PowerOnOff"
                         }
                     ],
-                    "deviceLogic": ""
+                    "deviceLogic": "or"
                 }
             },
-            "ruleName": "autotest4",
+            "ruleName": "emergency-alarm-rule",
             "actions": {
                 "notify": {
-                    "message": "空气净化器进入睡眠模式",
-                    "title": "袁威测试"
+                    "message": "Warning",
+                    "title": "Your house is dangerous!"
                 }
             }
         }

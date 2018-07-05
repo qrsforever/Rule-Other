@@ -1,9 +1,9 @@
 {
     "result": {
-        "profile": {},
+        "description": "海尔泊声背景音乐",
         "id": 21,
-        "description": "海尔泊声背景音乐"
+        "profile": {}
     },
-    "request": "/api/device/profile",
-    "status": 1
+    "status": 1,
+    "request": "/api/device/profile"
 }

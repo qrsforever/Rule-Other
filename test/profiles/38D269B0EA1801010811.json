@@ -1,39 +1,39 @@
 {
     "result": {
+        "description": "窗帘",
+        "id": 26,
         "profile": {
+            "OnlineState": {
+                "tag": "在线状态",
+                "write": "F",
+                "type": "enum",
+                "read": "T",
+                "range": {
+                    "2": "离线",
+                    "1": "在线"
+                }
+            },
             "Position": {
-                "type": "int",
                 "tag": "开合位置",
-                "write": "T",
+                "type": "int",
                 "range": "v >= 0 and v <= 6",
                 "step": "1",
-                "read": "T",
-                "unit": ""
-            },
-            "OnlineState": {
-                "type": "enum",
-                "range": {
-                    "1": "在线",
-                    "2": "离线"
-                },
-                "read": "T",
-                "tag": "在线状态",
-                "write": "F"
+                "write": "T",
+                "unit": "",
+                "read": "T"
             },
             "PowerOnOff": {
-                "type": "enum",
-                "range": {
-                    "1": "开启",
-                    "2": "关闭"
-                },
-                "read": "T",
                 "tag": "开关状态",
-                "write": "T"
+                "write": "T",
+                "type": "enum",
+                "read": "T",
+                "range": {
+                    "2": "关闭",
+                    "1": "开启"
+                }
             }
-        },
-        "id": 26,
-        "description": "窗帘"
+        }
     },
-    "request": "/api/device/profile",
-    "status": 1
+    "status": 1,
+    "request": "/api/device/profile"
 }
