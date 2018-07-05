@@ -466,6 +466,67 @@ Clp Script Design
 3. 脚本Actions中的方法act-control/act-notify会调用RuleEngineService中的ins-push/txt-push(返回false:异步, 返回true:同步)
 4. 如果ins-push/txt-push是异步(return:false)方式, 则act-xxx会自动创建等待结果的规则, 当父规则Context销毁, 该auto规则删除
 5. 如果联动规则触发了场景规则被调用, act-scene也会自动创建等待(子规则)结果规则, 且它触发的规则也会创建Context.
+6. act-xxx方法是RHS中Action, 每个action的执行可以是同步异步(3,4). 如果异步则会自动创建规则(autorule)用以等待结果, 并将之存入
+    response-rules中, 除此之外, 把自身funcall注入unanswer-list中,如果autorule检查到action执行成功, 会将funcall从unanswer-list移除,
+    Rule是判断unanswer-list的size决定自身是否执行成功的(size=0: success). RuleEngineService根据T(default:1是)定时给脚本喂时间, 这
+    样Rule就可以实现超时机制, (单次)超时后, 首先检查current-try次数, 如果小于retry-count, 则从unanswer-list中取出没有完成的
+    funcall,并且执行.
+
+Act Auto Gen Rule
+-----------------
+
+act-control(ins-04FA8309822A, CleaningMode, 2):
+```
+
+         +---> '_' represent inner auto generate
+         |
+         |          +---> parent rule name that call act-control in RHS
+         |          |
+         |          |                  +--> sign this rule is for reponse
+         |------------------------     |
+(defrule _rul-1529578016.389.86822-response-ins-04FA8309822A |---> action id (here is instance name)
+    (declare (salience 1000))               -----------------+
+    (object (is-a SweepingRobot) (ID ?id &:(eq ?id ins-04FA8309822A)) (CleaningMode ?v &:(eq ?v 2)))
+  =>
+    (send [rul-1529578016.389.86822] action-success "act-control ins-04FA8309822A CleaningMode 2")
+)         -------------------------- -------------- ---------------------------------------------
+          |                            |                                         |
+          +--> parent rule context     +--> rule context method                  |
+                                            modify unanswer-list                 v
+                                                                        arguments of action-success
+```
+*将设置instance(设备)的属性值作为条件,被控制的设备属性值如果上报值符合条件,证明控制成功*
+
+
+act-notify(n-350490027, "tellYou" "Girlfriend Birthday"):
+```
+
+                                             notify id        (assert (rule-response notifyid success))
+                                            -----------       |
+(defrule _rul-1529583875.818.80441-response-n-350490027       |
+    (declare (salience 1000))                                 |
+    (rule-response n-350490027 success)  <--------------------+
+  =>
+    (send [rul-1529583875.818.80441] action-success "act-notify n-350490027 \"tellYou\" \"Girlfriend Birthday\"")
+)
+
+```
+*通过响应Fact(rule-response notifyid success)判断消息通知是否执行成功.*
+
+
+act-scene(rul-1529578676.958.69587):
+```
+                                                                       (assert (rule-response ruleid success))
+                                            rule name: nest call       |
+                                            ------------------------   |
+(defrule _rul-1529578775.206.24324-response-rul-1529578676.958.69587   |
+    (declare (salience 1000))                                          |
+    (rule-response rul-1529578676.958.69587 success)  <----------------+
+  =>
+    (send [rul-1529578775.206.24324] action-success "act-scene rul-1529578676.958.69587")
+)
+```
+*通过响应Fact(rule-response ruleid success)判断消息通知是否执行成功.*
 
 
 Others
@@ -575,5 +636,50 @@ manualtest1 | fact | act-control | Yes
 manualtest3 | fact | act-control | Yes
 
 8. LHS带有`and`和`or`的规则测试
+
+```clp
+    (defrule rul-0000000000.000.00001 "tv-light-rule"
+      (and
+        (object (is-a Light)
+          (ID ?ins-38D269B0EA1801010311 &:(eq ?ins-38D269B0EA1801010311 ins-38D269B0EA1801010311))
+          (PowerOnOff ?PowerOnOff &:(= ?PowerOnOff 1))
+        )
+        (object (is-a Letv)
+          (ID ?ins-00000000000000000002 &:(eq ?ins-00000000000000000002 ins-00000000000000000002))
+          (PowerOnOff ?PowerOnOff &:(= ?PowerOnOff 1))
+        )
+        (object (is-a LightSensor)
+          (ID ?ins-00000000000000000001 &:(eq ?ins-00000000000000000001 ins-00000000000000000001))
+          (Quantity ?Quantity &:(>= ?Quantity 10 )&:(<= ?Quantity 20))
+        )
+      )
+     =>
+      (bind ?c (create-rule-context rul-0000000000.000.00001))
+      (if (eq ?c FALSE) then (return))
+      (send ?c act-control ins-38D269B0EA1801010311 Brightness 2)
+    )
+```
+*TestCase Logic And Pass*
+*在and逻辑下, object slot (ID ?id) id变量名必须不能一样(这里使用did), 否则and条件永远不成立*
+
+```clp
+    (defrule rul-0000000000.000.00002 "emergency-alarm-rule"
+      (or
+        (object (is-a EmergencyButton)
+          (ID ?ins-38D269B0EA1886D3E200 &:(eq ?ins-38D269B0EA1886D3E200 ins-38D269B0EA1886D3E200))
+          (PowerOnOff ?PowerOnOff &:(= ?PowerOnOff 1))
+        )
+        (object (is-a SmogAlarm)
+          (ID ?ins-00124B00146D743D00 &:(eq ?ins-00124B00146D743D00 ins-00124B00146D743D00))
+          (PowerOnOff ?PowerOnOff &:(= ?PowerOnOff 1))
+        )
+      )
+     =>
+      (bind ?c (create-rule-context rul-0000000000.000.00002))
+      (if (eq ?c FALSE) then (return))
+      (send ?c act-notify n-714636915 "Your house is dangerous!" "Warning")
+    )
+```
+*TestCase Logic Or Pass*
 
 9. LHS.Condition.SlotPoint带有的`&`和`|`"规则测试

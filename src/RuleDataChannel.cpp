@@ -364,7 +364,7 @@ bool ElinkRuleDataChannel::_ParseActions(rapidjson::Value &actions, std::shared_
                     LOGE("parse manualRuleId[%d] error!\n", i);
                     return false;
                 }
-                payload->mRHS->makeAction(AT_SCENE, rul.GetString());
+                payload->mRHS->makeAction(AT_SCENE, innerOfRulename(rul.GetString()));
             }
         }
     }

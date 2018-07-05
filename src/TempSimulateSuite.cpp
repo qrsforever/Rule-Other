@@ -16,6 +16,13 @@
 #include <fstream>
 #include <sstream>
 
+#define TEST_CASE_BLOCK \
+"\n/*-----------------------------------------------------------------" \
+"\n *   Test Case: %s" \
+"\n *-----------------------------------------------------------------*/\n"
+
+
+
 namespace HB {
 
 DeviceManager& deviceManager()
@@ -70,38 +77,61 @@ std::string getClassByDeviceId(const std::string &deviceId)
         return std::string("AirClean2");
     if (deviceId == "00124B00146D743D00")
         return std::string("SmogAlarm");
-    return std::string("Light");
+    if (deviceId == "38D269B0EA1801010311")
+        return std::string("Light");
+    if (deviceId == "00000000000000000001")
+        return std::string("LightSensor");
+    if (deviceId == "00000000000000000002")
+        return std::string("Letv");
+    if (deviceId == "38D269B0EA1886D3E200")
+        return std::string("EmergencyButton");
+
+    CRASH();
 }
 
 void tempSimulateTest(Message *msg)
 {
     LOGD("msg: [%d] [%d] [%d]\n", msg->what, msg->arg1, msg->arg2);
 
+#define TEST_END -1
 #define TEST_INIT 0
 #define TEST_PROFILE_SYNC 1
 #define TEST_RULE_SYNC 2
 #define TEST_INSTANCE 3
 #define TEST_RULE_TRIGGER 4
+#define TEST_RULE_AND 5
+#define TEST_RULE_OR 6
 
+    int delayms = 1000;
     switch (msg->arg1) {
         case TEST_INIT:
-            msg->arg1 = TEST_PROFILE_SYNC; //TEST_INSTANCE; /* specify test item */
+            /* msg->arg1 = TEST_PROFILE_SYNC; */
+            /* msg->arg1 = TEST_RULE_SYNC; */
+            /* msg->arg1 = TEST_INSTANCE; */
+            /* msg->arg1 = TEST_RULE_AND; */
+            msg->arg1 = TEST_RULE_OR;
             msg->arg2 = 0;
+            LOGD(TEST_CASE_BLOCK, "<<BEGIN>>");
             break;
         case TEST_PROFILE_SYNC: /* test device profile to clp defclass */
             switch (msg->arg2) {
-                case 1:
-/* PASS */          test_profile(getClassByDeviceId("0007A895C8A7"), "test/profiles/0007A895C8A7.json");
+/* PASS */      case 1:
+                    LOGD(TEST_CASE_BLOCK, "profile sync (0007A895C8A7.json)");
+                    test_profile(getClassByDeviceId("0007A895C8A7"), "test/profiles/0007A895C8A7.json");
                     break;
-                case 2:
-/* PASS */          test_profile(getClassByDeviceId("0007A895C7C7"), "test/profiles/0007A895C7C7.json");
+/* PASS */      case 2:
+                    LOGD(TEST_CASE_BLOCK, "profile sync (0007A895C7C7.json)");
+                    test_profile(getClassByDeviceId("0007A895C7C7"), "test/profiles/0007A895C7C7.json");
                     break;
-                case 3:
-/* PASS */          test_profile(getClassByDeviceId("04FA8309822A"), "test/profiles/04FA8309822A.json");
+/* PASS */      case 3:
+                    LOGD(TEST_CASE_BLOCK, "profile sync (04FA8309822A.json)");
+                    test_profile(getClassByDeviceId("04FA8309822A"), "test/profiles/04FA8309822A.json");
                     break;
-                case 4:
+/* PASS */      case 4:
+                    LOGD(TEST_CASE_BLOCK, "profile sync (00124B00146D743D00.json)");
                     test_profile(getClassByDeviceId("00124B00146D743D00"), "test/profiles/00124B00146D743D00.json");
                 default:
+                    LOGD(TEST_CASE_BLOCK, "show classes");
                     ruleEngine().core()->debug(DEBUG_SHOW_CLASSES);
                     msg->arg1 = TEST_RULE_SYNC; /* enter next test: rule */
                     msg->arg2 = 0;
@@ -110,22 +140,28 @@ void tempSimulateTest(Message *msg)
             break;
         case TEST_RULE_SYNC: /* test rule profile to clp defrule */
             switch (msg->arg2) {
-                case 1:
-/* PASS */          test_rule("test/rules/manualtest1.json"); /* 1529578676.958.69587 */
+/* PASS */      case 1:
+                    LOGD(TEST_CASE_BLOCK, "rule sync (manualtest1.json)");
+                    test_rule("test/rules/manualtest1.json"); /* 1529578676.958.69587 */
                     break;
-                case 2:
-/* PASS */          test_rule("test/rules/manualtest3.json"); /* 1529574021.272.65916 */
+/* PASS */      case 2:
+                    LOGD(TEST_CASE_BLOCK, "rule sync (manualtest3.json)");
+                    test_rule("test/rules/manualtest3.json"); /* 1529574021.272.65916 */
                     break;
-                case 3:
-/* PASS */          test_rule("test/rules/autotest1.json"); /* 1529578016.389.86822 */
+/* PASS */      case 3:
+                    LOGD(TEST_CASE_BLOCK, "rule sync (autotest1.json)");
+                    test_rule("test/rules/autotest1.json"); /* 1529578016.389.86822 */
                     break;
-                case 4:
-/* PASS */          test_rule("test/rules/autotest3.json"); /* 1529578775.206.24324 */
+/* PASS */      case 4:
+                    LOGD(TEST_CASE_BLOCK, "rule sync (autotest3.json)");
+                    test_rule("test/rules/autotest3.json"); /* 1529578775.206.24324 */
                     break;
-                case 5:
-/* PASS */          test_rule("test/rules/autotest4.json"); /* 1529583875.818.80441 */
+/* PASS */      case 5:
+                    LOGD(TEST_CASE_BLOCK, "rule sync (autotest4.json)");
+                    test_rule("test/rules/autotest4.json"); /* 1529583875.818.80441 */
                     break;
                 default:
+                    LOGD(TEST_CASE_BLOCK, "show rules");
                     ruleEngine().core()->debug(DEBUG_SHOW_RULES);
                     msg->arg1 = TEST_INSTANCE; /* enter next test: instance */
                     msg->arg2 = 0;
@@ -134,22 +170,28 @@ void tempSimulateTest(Message *msg)
             break;
         case TEST_INSTANCE: /* test device */
             switch (msg->arg2) {
-                case 1:
-/* PASS */          deviceManager().mStateCB("0007A895C8A7", getClassByDeviceId("0007A895C8A7"), 1); /* ADD */
+/* PASS */      case 1:
+                    LOGD(TEST_CASE_BLOCK, "instance online (0007A895C8A7)");
+                    deviceManager().mStateCB("0007A895C8A7", getClassByDeviceId("0007A895C8A7"), 1); /* ADD */
                     break;
-                case 2:
-/* PASS */          deviceManager().mStateCB("04FA8309822A", getClassByDeviceId("04FA8309822A"), 1);
+/* PASS */      case 2:
+                    LOGD(TEST_CASE_BLOCK, "instance online (04FA8309822A)");
+                    deviceManager().mStateCB("04FA8309822A", getClassByDeviceId("04FA8309822A"), 1);
                     break;
-                case 3:
-/* PASS */          deviceManager().mStateCB("0007A895C7C7", getClassByDeviceId("0007A895C7C7"), 1);
+/* PASS */      case 3:
+                    LOGD(TEST_CASE_BLOCK, "instance online (0007A895C7C7)");
+                    deviceManager().mStateCB("0007A895C7C7", getClassByDeviceId("0007A895C7C7"), 1);
                     break;
-                case 4:
-/* PASS */          deviceManager().mStateCB("0007A895C7C7", getClassByDeviceId("0007A895C7C7"), 2); /* DEL */
+/* PASS */      case 4:
+                    LOGD(TEST_CASE_BLOCK, "instance offline (0007A895C7C7)");
+                    deviceManager().mStateCB("0007A895C7C7", getClassByDeviceId("0007A895C7C7"), 2); /* DEL */
                     break;
-                case 5:
-/* PASS */          deviceManager().mPropertyCB("0007A895C8A7", "WorkMode", "2");
+/* PASS */      case 5:
+                    LOGD(TEST_CASE_BLOCK, "instance property change(0007A895C8A7 WorkMode 2)");
+                    deviceManager().mPropertyCB("0007A895C8A7", "WorkMode", "2");
                     break;
                 default:
+                    LOGD(TEST_CASE_BLOCK, "show instances");
                     ruleEngine().core()->debug(DEBUG_SHOW_INSTANCES);
                     msg->arg1 = TEST_RULE_TRIGGER; /* enter next test: rule trigger */
                     msg->arg2 = 0;
@@ -158,8 +200,9 @@ void tempSimulateTest(Message *msg)
             break;
         case TEST_RULE_TRIGGER: /* test rule trigger */
             switch (msg->arg2) {
-                case 1:  /* trigger autotest1: device control rule */
-/* PASS */          deviceManager().mPropertyCB("0007A895C8A7", "WorkMode", "4");
+/* PASS */      case 1:  /* trigger autotest1: device control rule */
+                    LOGD(TEST_CASE_BLOCK, "rule tigger autotest1(0007A895C8A7 WorkMode 4)");
+                    deviceManager().mPropertyCB("0007A895C8A7", "WorkMode", "4");
                     /* "actions": {
                      *     "deviceControl": [
                      *         {
@@ -170,16 +213,18 @@ void tempSimulateTest(Message *msg)
                      *     ]
                      * } */
                     break;
-                case 2:  /* trigger autotest3: scene manual rule */
-/* PASS */          deviceManager().mPropertyCB("0007A895C8A7", "WorkMode", "5");
+/* PASS */      case 2:  /* trigger autotest3: scene manual rule */
+                    LOGD(TEST_CASE_BLOCK, "rule tigger autotest3(0007A895C8A7 WorkMode 5)");
+                    deviceManager().mPropertyCB("0007A895C8A7", "WorkMode", "5");
                     /* "actions": {
                      *     "manualRuleId": [
                      *         "1529578676.958.69587"
                      *     ]
                      * } */
                     break;
-                case 3:  /* trigger autotest4: notify rule */
-/* PASS */          deviceManager().mPropertyCB("0007A895C8A7", "WorkMode", "1");
+/* PASS */      case 3:  /* trigger autotest4: notify rule */
+                    LOGD(TEST_CASE_BLOCK, "rule tigger autotest4(0007A895C8A7 WorkMode 1)");
+                    deviceManager().mPropertyCB("0007A895C8A7", "WorkMode", "1");
                     /* "actions": {
                      *     "notify": {
                      *         "message": "",
@@ -187,25 +232,86 @@ void tempSimulateTest(Message *msg)
                      *     }
                      * } */
                     break;
-                case 4: /* trigger manualtest1 */
-/* PASS */          ruleEngine().triggerRule(innerOfRulename("1529578676.958.69587"));
+/* PASS */      case 4: /* trigger manualtest1 */
+                    LOGD(TEST_CASE_BLOCK, "rule tigger manualtest1(1529578676.958.69587)");
+                    ruleEngine().triggerRule(innerOfRulename("1529578676.958.69587"));
                     break;
-                case 5: /* trigger manualtest3 */
-/* PASS */          ruleEngine().triggerRule(innerOfRulename("1529574021.272.65916"));
+/* PASS */      case 5: /* trigger manualtest3 */
+                    LOGD(TEST_CASE_BLOCK, "rule tigger manualtest3(1529574021.272.65916)");
+                    ruleEngine().triggerRule(innerOfRulename("1529574021.272.65916"));
                     break;
                 default:
+                    LOGD(TEST_CASE_BLOCK, "show agenda");
                     ruleEngine().core()->debug(DEBUG_SHOW_AGENDA);
-                    return;
+                    msg->arg1 = TEST_RULE_AND;
+            }
+            break;
+        case TEST_RULE_AND: /* test rule logic and */
+            switch (msg->arg2) {
+/* PASS */      case 1:
+                    LOGD(TEST_CASE_BLOCK, "rule and (Light / LightSensor / Letv profile)");
+                    test_profile(getClassByDeviceId("38D269B0EA1801010311"), "test/profiles/38D269B0EA1801010311.json");
+                    test_profile("LightSensor", "test/profiles/Light-Sensor.json");
+                    test_profile("Letv", "test/profiles/Letv.json");
+                    break;
+/* PASS */      case 2:
+                    LOGD(TEST_CASE_BLOCK, "rule and (rule Light / LightSensor / Letv)");
+                    test_rule("test/rules/tv-light-rule.json"); /* 0000000000.000.00001 */
+                    break;
+/* PASS */      case 3:
+                    LOGD(TEST_CASE_BLOCK, "rule and (online Light / LightSensor / Letv)");
+                    deviceManager().mStateCB("38D269B0EA1801010311", getClassByDeviceId("38D269B0EA1801010311"), 1);
+                    deviceManager().mStateCB("00000000000000000001", "LightSensor", 1);
+                    deviceManager().mStateCB("00000000000000000002", "Letv", 1);
+                    break;
+/* PASS */      case 4:
+                    LOGD(TEST_CASE_BLOCK, "rule and [(Light.PowerOnOff,1), (Letv.PowerOnOff,1), (LightSensor.Quantity,15)]");
+                    deviceManager().mPropertyCB("38D269B0EA1801010311", "PowerOnOff", "1");
+                    deviceManager().mPropertyCB("00000000000000000002", "PowerOnOff", "1");
+                    deviceManager().mPropertyCB("00000000000000000001", "Quantity", "15");
+                    break;
+                default:
+                    LOGD(TEST_CASE_BLOCK, "show agenda");
+                    ruleEngine().core()->debug(DEBUG_SHOW_AGENDA);
+                    msg->arg1 = TEST_RULE_OR;
+            }
+            break;
+        case TEST_RULE_OR: /* test rule logic or */
+            switch (msg->arg2) {
+/* PASS */      case 1:
+                    LOGD(TEST_CASE_BLOCK, "rule or (EmergencyButton / SmogAlarm profile)");
+                    test_profile(getClassByDeviceId("38D269B0EA1886D3E200"), "test/profiles/38D269B0EA1886D3E200.json");
+                    test_profile(getClassByDeviceId("00124B00146D743D00"), "test/profiles/00124B00146D743D00.json");
+                    break;
+/* PASS */      case 2:
+                    LOGD(TEST_CASE_BLOCK, "rule or (rule Emergency-Alarm)");
+                    test_rule("test/rules/emergency-alarm.json"); /* 0000000000.000.00002 */
+                    break;
+/* PASS */      case 3:
+                    LOGD(TEST_CASE_BLOCK, "rule or (online EmergencyButton / SmogAlarm)");
+                    deviceManager().mStateCB("38D269B0EA1886D3E200", getClassByDeviceId("38D269B0EA1886D3E200"), 1);
+                    deviceManager().mStateCB("00124B00146D743D00", getClassByDeviceId("00124B00146D743D00"), 1);
+                    break;
+/* PASS */      case 4:
+                    LOGD(TEST_CASE_BLOCK, "rule or [(EmergencyButton.PowerOnOff,1), (SmogAlarm.PowerOnOff,1)]");
+                    /* deviceManager().mPropertyCB("38D269B0EA1886D3E200", "PowerOnOff", "1"); */
+                    deviceManager().mPropertyCB("00124B00146D743D00", "PowerOnOff", "1");
+                    break;
+                default:
+                    LOGD(TEST_CASE_BLOCK, "show agenda");
+                    ruleEngine().core()->debug(DEBUG_SHOW_AGENDA);
+                    msg->arg1 = TEST_END;
             }
             break;
         default:
+            LOGD(TEST_CASE_BLOCK, "<<loop show all per 5s>>");
             ruleEngine().core()->debug(DEBUG_SHOW_ALL);
-            return;
+            delayms = 5000;
     }
 
     /* loop test */
     mainHandler().sendMessageDelayed(
-        mainHandler().obtainMessage(msg->what, msg->arg1, msg->arg2 + 1), 1000);
+        mainHandler().obtainMessage(msg->what, msg->arg1, msg->arg2 + 1), delayms);
 }
 
 } /* namespace HB */

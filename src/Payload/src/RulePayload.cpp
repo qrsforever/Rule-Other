@@ -156,7 +156,8 @@ std::string Condition::toString(std::string fmt)
     } else if (mType == CT_INSTANCE) {
         /* str.append("?").append(mID).append(" <- "); */
         str.append("(object (is-a ").append(mCls).append(")");
-        str.append(fmt + "  ").append("(ID ?id &:(eq ?id ").append(mID).append("))");
+        str.append(fmt + "  ").append("(ID ?").append(mID);
+        str.append(" &:(eq ?").append(mID).append(" ").append(mID).append("))");
         for (size_t i = 0; i < slotCount(); ++i)
             str.append(get(i)->toString(fmt + "  "));
         str.append(fmt).append(")");
@@ -223,7 +224,7 @@ std::string LHSNode::toString(std::string fmt)
         return std::string();
 
     std::string log = mCondLogic;
-    if ((mCondLogic != "and") || (mCondLogic != "or") || (mCondLogic != "not"))
+    if ((mCondLogic != "and") && (mCondLogic != "or") && (mCondLogic != "not"))
         log = "and";
 
     std::string str("");
