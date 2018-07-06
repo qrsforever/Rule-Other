@@ -344,12 +344,12 @@ mCloudMgr|------------------|       | |     | ------------------------ |        
 | |  |     mServerRoot      |                  |----------------------|  /        +--------------------+
 | +--|     mDeviceChannel   |          mEnv    |    mHandler          | /mHandler     ^     |
 +----|     mRuleChannel     |        +-------◆ |    mEnv              |◆              |     |
-     |----------------------|        |         |----------------------|         ------+     |
-     |    callInstancePush  |        |         |    driver()          |        /            |
-     |    callMessagePush   |        |         |                      |       /    +------------------+
-     |    setDeviceChannel  |        |         |   handleTimer        |      /     | RuleEventThread  |
-     |    setRuleChannel    |        |         |   handleClassSync    |      |     |------------------|
-     |                      |        |         |   handleRuleSync     |      |     |   mMessageQueue  |
+     | mOfflineInsesCalled  |        |         |----------------------|         ------+     |
+     |----------------------|        |         |    driver()          |        /            |
+     |    callInstancePush  |        |         |                      |       /    +------------------+
+     |    callMessagePush   |        |         |   handleTimer        |      /     | RuleEventThread  |
+     |    setDeviceChannel  |        |         |   handleClassSync    |      |     |------------------|
+     |    setRuleChannel    |        |         |   handleRuleSync     |      |     |   mMessageQueue  |
      |     handleMessage    |        |         |   handleInstanceAdd  |      |     +------------------+
      +----------------------+        |         |   handleInstanceDel  |      |
              ◇                       v         |   handleInstancePut  |      |
@@ -431,25 +431,26 @@ Clp Script Design
              v                        |   RuleContext     |                       /              |
         +--------+                    |-------------------|                      /              /
     +---| Rule-1 |                    |   rule-id         |                     /              /
-    |   +--------+                    |   timeout-ms      |                +---------+  +-----------+        +----------------+
-    |                                 |   retry-count     |--------------▷ | Context |  |  DEVICE   |        |  SmogAlarm     |
-    +-> +--------+                    |   current-try     |                |         |  |-----------|        |----------------|
-    +---| Rule-2 |                    |   start-time      |                +---------+  |   ID      |◁ ------|   OnlineState  |
-    |   +--------+                    |   unanswer-list   |                             |   UUID    |        |   PowerOnOff   |
-    |                                 |   response-rules  |                             |   Class   |        |   Battery      |
-    +-> +--------+                    |-------------------|                             +-----------+        +----------------+
-    +---| Rule-3 |                    |   try-again       |
-    |   +--------+                    |   unanswer-count  |
-    |                                 |   act-control     |
-    +-> +--------+                    |   act-notify      |
-        | Rule-4 |                    |   act-scene       |
-        +--------+                    +-------------------+
+    |   +--------+                    |   timeout-ms      |           +---------+       +-----------+        +----------------+
+    |                                 |   retry-count     |---------· | Context |       |  DEVICE   |        |  SmogAlarm     |
+    +-> +--------+                    |   current-try     |           |         |       |-----------|        |----------------|
+    +---| Rule-2 |                    |   start-time      |           +---------+       |   ID      |◁ ------|   OnlineState  |
+    |   +--------+                    |   act-error       |                             |   UUID    |        |   PowerOnOff   |
+    |                                 |   unanswer-list   |                             |   Class   |        |   Battery      |
+    +-> +--------+                    |   response-rules  |                             +-----------+        +----------------+
+    +---| Rule-3 |                    |-------------------|
+    |   +--------+                    |   try-again       |
+    |                                 |   unanswer-count  |
+    +-> +--------+                    |   act-control     |
+        | Rule-4 |                    |   act-notify      |
+        +--------+                    |   act-scene       |
+            |                         +-------------------+
             |                                      +-------------------------+----------------------+------------+
             |                                      |                         |                      |            |
             |          Action                      |                         |                      |            v
             +------------------------- >  act-control ------------> act-notify -----------> act-scene   |   send-message
             (RHS)                             |  ^                      |   ^                   /       |        |
-                                              |  | true                 |   | true             /        |        | success
+                            act-step-control  |  | true                 |   | true             /        |        | success
                                               |  |                      |   |                 v                  |   or
                                               |  +------>  make-rule    |   +------>  make-rule                  |  fail
                                               |  | false  (response)    |   | false  (response)                  |
@@ -471,6 +472,7 @@ Clp Script Design
     Rule是判断unanswer-list的size决定自身是否执行成功的(size=0: success). RuleEngineService根据T(default:1是)定时给脚本喂时间, 这
     样Rule就可以实现超时机制, (单次)超时后, 首先检查current-try次数, 如果小于retry-count, 则从unanswer-list中取出没有完成的
     funcall,并且执行.
+7. 如果规则被触发, 但是RHS中的Action控制的设备Poweroff, RuleEngineService会得知该事件, 并在设备上线后刷新与之相关的Rules
 
 Act Auto Gen Rule
 -----------------
@@ -578,6 +580,53 @@ class ElinkRequest(object):
 3. 脚本只供开发调试使用
 
 
+Rule Categories
+---------------
+
+classified into three major categories:
+
+- global rules which cannot be disable, such as: retract the fact of datetime which asserted per second
+
+    ```
+    (defrule retract-datetime
+        (declare (salience ?*SALIENCE-LOWEST*))
+        ?f <- (datetime $?)
+      =>
+        (retract ?f)
+    )
+    ```
+
+ *一个fact被声明, 将不会消失, 但可以通过modify修改, 也可以retract将其收回.*
+
+- custom rules configured through UI which can enable or disable. the naming conventions of the rule is:
+    ```
+    ; "rul-" is the prefix of the custom rule name
+    (defrule rul-1529578775.206.24324 "autotest3"
+      (object (is-a AirClean1)
+        (ID ?id &:(eq ?id ins-0007A895C8A7))
+        (WorkMode ?WorkMode &:(= ?WorkMode 5))
+      )
+     =>
+      (bind ?c (create-rule-context rul-1529578775.206.24324))
+      (if (eq ?c FALSE) then (return))
+      (send ?c act-scene rul-1529578676.958.69587)
+    )
+    ```
+*用户有权开启/关闭自己配置的规则, 设计上一个custom rule对应一个clp文件, 方便删除更新.*
+
+- auto-gen rules which have short life cycle, disappeared when got the response of the action or rule context destroied.
+
+    ```
+    ; "_rul-" is the prefix of the auto-gen rule name
+    (defrule _rul-1529578775.206.24324-response-rul-1529578676.958.69587
+        (declare (salience 1000))
+        (rule-response rul-1529578676.958.69587 success)
+      =>
+        (send [rul-1529578775.206.24324] action-success "act-scene rul-1529578676.958.69587")
+    )
+    ```
+*用户不可见, Action方法中内部生成, 当Action有response(或者Rule超时/失败)则自动删除*
+
 TODO
 ====
 
@@ -659,7 +708,7 @@ manualtest3 | fact | act-control | Yes
       (send ?c act-control ins-38D269B0EA1801010311 Brightness 2)
     )
 ```
-*TestCase Logic And Pass*
+*TestCase: `TEST_RULE_AND` Pass*
 *在and逻辑下, object slot (ID ?id) id变量名必须不能一样(这里使用did), 否则and条件永远不成立*
 
 ```clp
@@ -680,6 +729,15 @@ manualtest3 | fact | act-control | Yes
       (send ?c act-notify n-714636915 "Your house is dangerous!" "Warning")
     )
 ```
-*TestCase Logic Or Pass*
+*TestCase: `TEST_RULE_OR` Pass*
 
 9. LHS.Condition.SlotPoint带有的`&`和`|`"规则测试
+
+10. RHS触发的Action中设备如果不在线(poweroff), 那么需要在设备上线后重新刷新相关规则(条件重新判断)
+
+*TestCase: `TEST_RULE_INS_ONLINE_LATER` Pass*
+
+11. RHS触发的Action中设备的最终状态,需要按一定step,逐步达到该效果.
+
+*TestCase: `TEST_RULE_STEP_CONTROL` Pass*
+*用户只是要最终状态, 至于如何达到这个状态(begin, step)用户其实不需要关注, 所以这个功能暂时没有实际意义*
