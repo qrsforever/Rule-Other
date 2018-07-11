@@ -36,8 +36,8 @@ Rule Schema
                     "month":"10",
                     "day":"10|13|17",
                     "hour":"every",
-                    "minute":"0",
-                    "second":"0"
+                    "minute":"every",
+                    "second":"1"
                 }
                 ],
                 "deviceCondition":{
@@ -298,7 +298,7 @@ Rule Class UML
                                   | | | |                                             |          |
                   +---------------+ | | +----------------+                            |          |
                   |                 | |                  |                            |          |
-                  |                 | |                  |                            ◁          |
+                  |                 | |                  |                            ▽          |
          +------------------+       | |     +--------------------------+        +----------+ ◁ --+             +-----------------+
          | RuleDataChannel  |       | |     |    DeviceDataChannel     |        | Payload  |                   |  ClassPayload   |
 mCloudMgr|------------------|       | |     | ------------------------ |        |----------| ◁ ----------------|-----------------|
@@ -335,12 +335,12 @@ mCloudMgr|------------------|       | |     | ------------------------ |        
 | |             |      +----------------------------+        |----------------|            |   |
 | |             |                                            |   mCallback    |            |   |
 | |             |                                            +----------------+            |   |
-| |             |                                                                          |   |
-| |             |                                                                          |   v
-| |  +----------------------+                                                     +--------------------+
-| |  |  RuleEngineService   |                                                     |  RuleEventHandler  |
-| |  |----------------------|    mCore         +----------------------+    ------>|--------------------|
-| |  |     mCore            | ◆ -------------> |    RuleEngineCore    |   /       |    handleMessage   |
+| |  +----------------------+                                                              |   |
+| |  |  RuleEngineService   |                                                              |   v
+| |  |----------------------|   mUrgentHandler                                    +--------------------+
+| |  |     mUrgentHandler   |◇ -------------------------------------------------->|  RuleEventHandler  |
+| |  |                      |    mCore         +----------------------+    ------>|--------------------|
+| |  |  mCore/mCoreUrgent   | ◆ -------------> |    RuleEngineCore    |   /       |    handleMessage   |
 | |  |     mServerRoot      |                  |----------------------|  /        +--------------------+
 | +--|     mDeviceChannel   |          mEnv    |    mHandler          | /mHandler     ^     |
 +----|     mRuleChannel     |        +-------◆ |    mEnv              |◆              |     |
@@ -351,15 +351,15 @@ mCloudMgr|------------------|       | |     | ------------------------ |        
      |    setDeviceChannel  |        |         |   handleClassSync    |      |     |------------------|
      |    setRuleChannel    |        |         |   handleRuleSync     |      |     |   mMessageQueue  |
      |     handleMessage    |        |         |   handleInstanceAdd  |      |     +------------------+
-     +----------------------+        |         |   handleInstanceDel  |      |
-             ◇                       v         |   handleInstancePut  |      |
-      mStore |             +---------------+   +----------------------+      |
-             |             |  Environment  |                                 |
-             |             |               |--\                              |
-             |             +---------------+   \  CLP                        |
-             |              Clipscpp            ------> clips6.30            |
-             \                                                               |
-              \                                                              |
+     +----------------------+        |         |   handleInstanceDel  |      |              △
+             ◇                       v         |   handleInstancePut  |      |              |
+      mStore |             +---------------+   +----------------------+      |              |
+             |             |  Environment  |                                 |              |
+             |             |               |--\                              |    +---------------------+
+             |             +---------------+   \  CLP                        |    |   RuleUrgentThread  |
+             |              Clipscpp            ------> clips6.30            |    |---------------------|
+             \                                                               |    |     mService        |
+              \                                                              |    +---------------------+
                \            +----------------------+                         |
                 \           |   RuleEngineStore    |                         |
                  ---------> |----------------------|                         |
