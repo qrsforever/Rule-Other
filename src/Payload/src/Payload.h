@@ -19,6 +19,7 @@ typedef enum {
     PT_INSTANCE_PAYLOAD,
     PT_RULE_PAYLOAD,
     PT_CLASS_PAYLOAD,
+    PT_TIMER_PAYLOAD,
 } PayloadType;
 
 class Payload : public ::UTILS::Object {

@@ -10,10 +10,11 @@
 #include "RuleEventHandler.h"
 #include "RuleEventTypes.h"
 #include "InstancePayload.h"
+#include "Common.h"
 #include "Log.h"
 #include <stdlib.h>
 
-#include "TempSimulateSuite.h" /* TODO only test */
+/* #define USE_TIMER_EVENT 1 */
 
 namespace HB {
 
@@ -25,6 +26,11 @@ RuleDataChannel::RuleDataChannel()
 
 RuleDataChannel::~RuleDataChannel()
 {
+}
+
+int RuleDataChannel::init()
+{
+    return 0;
 }
 
 bool RuleDataChannel::send(int action, std::shared_ptr<Payload> payload)
@@ -47,17 +53,16 @@ ElinkRuleDataChannel::~ElinkRuleDataChannel()
 int ElinkRuleDataChannel::init()
 {
     LOGTT();
-
     /* regist rule sync json doc from cloud */
-    mCloudMgr.registRuleSyncCallback(
+    mCloudMgr.registSyncRuleProfileCallback(
         std::bind(
-            &ElinkRuleDataChannel::onRuleSync,
+            &ElinkRuleDataChannel::onSyncRuleProfile,
             this,
             std::placeholders::_1)
         );
-
     return 0;
 }
+
 
 bool ElinkRuleDataChannel::_ParseTrigger(rapidjson::Value &trigger, std::shared_ptr<RulePayload> payload)
 {
@@ -126,6 +131,52 @@ bool ElinkRuleDataChannel::_ParseTimeString(const char *ctimestr, SlotPoint &slo
         } while (t_not);
         return true;
     }
+
+    /* TODO */
+    slotpoint.append("=", ctimestr);
+    return true;
+}
+
+bool ElinkRuleDataChannel::_ParseTimeString(const char *ctimestr, TimeNode &node)
+{
+    char *timestr = (char*)ctimestr;
+    char *t_set = strtok(timestr,"|");
+    if (t_set) {
+        node.setValueType(eSet);
+        do {
+            node.append(atoi(t_set));
+            t_set = strtok(NULL, "|");
+        } while (t_set);
+        return true;
+    }
+
+    char *t_min = strtok(timestr, "-");
+    char *t_max = strtok(NULL, "-");
+    if (t_min && t_max) {
+        node.setValueType(eRange);
+        node.setRange(atoi(t_min), atoi(t_max));
+        return true;
+    } else {
+        LOGE("parse conditions.timeCondition.x error!\n");
+        return false;
+    }
+
+    if (!strncmp(timestr, "every", 5)) {
+        node.setValueType(eAny);
+        return true;
+    }
+
+    char *t_not = strtok(timestr, "!");
+    if (t_not) {
+        node.setValueType(eNot);
+        do {
+            node.append(atoi(t_not));
+            t_not = strtok(NULL, "!");
+        } while (t_not);
+        return true;
+    }
+
+    node.setValueType(eNull);
     return true;
 }
 
@@ -147,7 +198,7 @@ bool ElinkRuleDataChannel::_ParsePropValue(const char *cpropval, SlotPoint &slot
         slotpoint.append("<=", elt + 2);
         return true;
     }
-    char *neq = strstr(propval, "!=");
+    char *neq = strstr(propval, "~=");
     if (neq) {
         slotpoint.append("<>", neq + 2);
         return true;
@@ -183,52 +234,102 @@ bool ElinkRuleDataChannel::_ParseConditions(rapidjson::Value &conditions, std::s
                 node = &(payload->mLHS->makeNode("or"));
             char fctID[8] = { 0 };
             for (size_t i = 0; i < timeCondition.Size(); ++i) {
-                sprintf(fctID, "fct_f%lu", i);
-                Condition &timeCond = node->makeCond(CT_FACT, "datetime", fctID);
                 rapidjson::Value &dt = timeCondition[i];
+                sprintf(fctID, "fct_f%lu", i);
+#ifdef USE_TIMER_EVENT
+                char eID[9] = { 0 };
+                sprintf(eID, "%u", rand() % 100000000);
+                std::shared_ptr<TimerEvent> te;
+                if (dt.HasMember("week"))
+                    te = std::make_shared<TimerEvent>(atoi(eID), true);
+                else
+                    te = std::make_shared<TimerEvent>(atoi(eID), false);
+                Condition &timeCond = node->makeCond(CT_TEMPLATE, "timer-event", fctID);
+                timeCond.makeSlot("id").append("eq", eID);
+#else
+                Condition &timeCond = node->makeCond(CT_FACT, "datetime", fctID);
+#endif
+
                 if (!dt.IsObject()) {
                     LOGE("parse conditions.timeCondition[%d] error!\n", i);
                     return false;
                 }
                 timeCond.makeSlot("clock");
                 if (dt.HasMember("year") && dt["year"].IsString()) {
+#ifdef USE_TIMER_EVENT
+                    if (!_ParseTimeString(dt.GetString(), *(te->year()))) {
+#else
                     if (!_ParseTimeString(dt.GetString(), timeCond.makeSlot("year"))) {
+#endif
                         LOGE("parse conditions.timeCondition[%d].year error!\n", i);
                         return false;
                     }
                 }
                 if (dt.HasMember("month") && dt["month"].IsString()) {
+#ifdef USE_TIMER_EVENT
+                    if (!_ParseTimeString(dt.GetString(), *(te->month()))) {
+#else
                     if (!_ParseTimeString(dt.GetString(), timeCond.makeSlot("month"))) {
+#endif
                         LOGE("parse conditions.timeCondition[%d].month error!\n", i);
                         return false;
                     }
                 }
                 if (dt.HasMember("day") && dt["day"].IsString()) {
+#ifdef USE_TIMER_EVENT
+                    if (!_ParseTimeString(dt.GetString(), *(te->day()))) {
+#else
                     if (!_ParseTimeString(dt.GetString(), timeCond.makeSlot("day"))) {
+#endif
                         LOGE("parse conditions.timeCondition[%d].day error!\n", i);
                         return false;
                     }
                 }
                 if (dt.HasMember("hour") && dt["hour"].IsString()) {
+#ifdef USE_TIMER_EVENT
+                    if (!_ParseTimeString(dt.GetString(), *(te->hour()))) {
+#else
                     if (!_ParseTimeString(dt.GetString(), timeCond.makeSlot("hour"))) {
+#endif
                         LOGE("parse conditions.timeCondition[%d].hour error!\n", i);
                         return false;
                     }
                 }
                 if (dt.HasMember("minute") && dt["minute"].IsString()) {
+#ifdef USE_TIMER_EVENT
+                    if (!_ParseTimeString(dt.GetString(), *(te->minute()))) {
+#else
                     if (!_ParseTimeString(dt.GetString(), timeCond.makeSlot("minute"))) {
+#endif
                         LOGE("parse conditions.timeCondition[%d].minute error!\n", i);
                         return false;
                     }
                 }
                 if (dt.HasMember("second") && dt["second"].IsString()) {
+#ifdef USE_TIMER_EVENT
+                    if (!_ParseTimeString(dt.GetString(), *(te->second()))) {
+#else
                     if (!_ParseTimeString(dt.GetString(), timeCond.makeSlot("second"))) {
+#endif
                         LOGE("parse conditions.timeCondition[%d].second error!\n", i);
                         return false;
                     }
                 }
-            }
-        }
+                if (dt.HasMember("week") && dt["week"].IsString()) {
+#ifdef USE_TIMER_EVENT
+                    if (!_ParseTimeString(dt.GetString(), *(te->week()))) {
+#else
+                    if (!_ParseTimeString(dt.GetString(), timeCond.makeSlot("week"))) {
+#endif
+                        LOGE("parse conditions.timeCondition[%d].week error!\n", i);
+                        return false;
+                    }
+                }
+#ifdef USE_TIMER_EVENT
+                payload->mTimerEvents.push_back(te);
+#endif
+            } /* end for */
+        } /* end timeCondition */
     }
 
     if (conditions.HasMember("deviceCondition")) {
@@ -268,7 +369,7 @@ bool ElinkRuleDataChannel::_ParseConditions(rapidjson::Value &conditions, std::s
                     return false;
                 }
                 Condition &insCond = node->makeCond(CT_INSTANCE,
-                    getClassByDeviceId(did.GetString()), innerOfInsname(did.GetString()));
+                    getClassNameByDeviceId(did.GetString()), innerOfInsname(did.GetString()));
 
                 SlotPoint &slotpoint = insCond.makeSlot(pro.GetString());
                 char *propval = (char*)val.GetString();
@@ -371,11 +472,11 @@ bool ElinkRuleDataChannel::_ParseActions(rapidjson::Value &actions, std::shared_
     return true;
 }
 
-void ElinkRuleDataChannel::onRuleSync(std::string jsondoc)
+void ElinkRuleDataChannel::onSyncRuleProfile(const std::string jsonDoc)
 {
-    LOGD("jsondoc:\n%s\n", jsondoc.c_str());
+    LOGD("jsonDoc:\n%s\n", jsonDoc.c_str());
     rapidjson::Document doc;
-    doc.Parse<0>(jsondoc.c_str());
+    doc.Parse<0>(jsonDoc.c_str());
     if (doc.HasParseError()) {
         rapidjson::ParseErrorCode code = doc.GetParseError();
         LOGE("rapidjson parse error[%d]\n", code);

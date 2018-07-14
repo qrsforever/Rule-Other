@@ -9,6 +9,7 @@
 #include "ClassPayload.h"
 #include "RulePayload.h"
 #include "InstancePayload.h"
+#include "TimerPayload.h"
 
 using namespace HB;
 
@@ -32,6 +33,7 @@ void test_rule_payload()
     payload->mLHS->condLogic() = "and"; // TOP
 
 #if 1
+#if 0
     Condition &timeCond = payload->mLHS->makeCond(CT_FACT, "datetime", "fct_t1");
 #else
     Condition &timeCond = payload->mLHS->makeCond(CT_TEMPLATE, "datetime", "fct_t2");
@@ -47,6 +49,10 @@ void test_rule_payload()
     /* timeCond.makeSlot("minute").append("=", "0"); */
     /* timeCond.makeSlot("second").append("=", "0"); */
     /* timeCond.makeSlot("wday"); */
+#else
+    Condition &timeCond = payload->mLHS->makeCond(CT_TEMPLATE, "timer-event", "fct_t1");
+    timeCond.makeSlot("id").append("eq", "1001");
+#endif
 
     LHSNode &or_node = payload->mLHS->makeNode("or");
 
@@ -81,7 +87,6 @@ int main(int argc, char *argv[])
     *	Test Class Payload
     *-----------------------------------------------------------------*/
     test_class_payload();
-
 
     /*-----------------------------------------------------------------
     *	Test Rule Payload

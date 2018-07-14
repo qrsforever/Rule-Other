@@ -11,13 +11,15 @@
 
 #include "DataChannel.h"
 #include "RulePayload.h"
+#include "TimerEvent.h"
 #include "rapidjson/document.h"
+
+#include "TempSimulateSuite.h"
 
 #ifdef __cplusplus
 
 namespace HB {
 
-class CloudManager;
 class RuleEventHandler;
 
 class RuleDataChannel : public DataChannel {
@@ -25,11 +27,12 @@ public:
     RuleDataChannel();
     virtual ~RuleDataChannel();
 
-    virtual int init() = 0;
+    int init();
+
     virtual bool send(int action, std::shared_ptr<Payload> payload);
 
 protected:
-    CloudManager &mCloudMgr;
+    HBCloudManager &mCloudMgr;
     RuleEventHandler &mH;
 }; /* class RuleDataChannel */
 
@@ -39,8 +42,7 @@ public:
     ~ElinkRuleDataChannel();
 
     int init();
-
-    void onRuleSync(std::string jsondoc);
+    void onSyncRuleProfile(const std::string jsonDoc);
 
     bool send(int action, std::shared_ptr<Payload> payload);
 
@@ -50,6 +52,7 @@ private:
     bool _ParseActions(rapidjson::Value &actions, std::shared_ptr<RulePayload> payload);
 
     bool _ParseTimeString(const char *timestr, SlotPoint &slotpoint);
+    bool _ParseTimeString(const char *timestr, TimeNode &node);
     bool _ParsePropValue(const char *propval, SlotPoint &slotpoint);
 
 }; /* class ElinkRuleDataChannel */

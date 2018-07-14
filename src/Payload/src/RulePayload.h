@@ -154,6 +154,7 @@ public:
 
     std::shared_ptr<LHSNode> mLHS;
     std::shared_ptr<RHSNode> mRHS;
+    std::vector<std::shared_ptr<::UTILS::Object>> mTimerEvents;
 }; /* class RulePayload */
 
 std::string innerOfRulename(std::string name);

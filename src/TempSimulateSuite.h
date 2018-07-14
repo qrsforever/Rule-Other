@@ -13,61 +13,53 @@
 #include <functional>
 #include "Message.h"
 
-
 #ifdef __cplusplus
 
 using namespace UTILS;
 
 namespace HB {
 
-class DeviceManager {
+/* from device-manage */
+typedef enum {
+    HB_DEVICE_STATUS_UNINITIALIZED = 0,
+    HB_DEVICE_STATUS_INITIALIZING,
+    HB_DEVICE_STATUS_ONLINE,
+    HB_DEVICE_STATUS_OFFLINE,
+} HBDeviceStatus;
+
+class HBDeviceCallBackHandler {
 public:
-    DeviceManager() {}
-    ~DeviceManager(){}
+    virtual ~HBDeviceCallBackHandler() {}
 
-    typedef std::function<void(std::string, std::string, int)> DeviceStateChangedCallback;
-    typedef std::function<void(std::string, std::string, std::string)> DevicePropertyChangedCallback;
-    typedef std::function<void(std::string, std::string)> DeviceProfileSyncCallback;
-
-    void registDeviceStateChangedCallback(DeviceStateChangedCallback cb) {
-        mStateCB = cb;
-    }
-
-    void registDevicePropertyChangedCallback(DevicePropertyChangedCallback cb) {
-        mPropertyCB = cb;
-    }
-
-    void registDeviceProfileSyncCallback(DeviceProfileSyncCallback cb) {
-        mProfileCB = cb;
-    }
-
-    void setProperty(std::string did, std::string pro, std::string val);
-
-public:
-    DeviceStateChangedCallback mStateCB;
-    DevicePropertyChangedCallback mPropertyCB;
-    DeviceProfileSyncCallback mProfileCB;
+    virtual void onDeviceStatusChanged(const std::string deviceId, const std::string deviceName, HBDeviceStatus status) = 0;
+    virtual void onDevicePropertyChanged(const std::string deviceId, const std::string propertyKey, std::string value) = 0;
 };
 
-DeviceManager& deviceManager();
-
-class CloudManager {
+class HBDeviceManager {
 public:
-    CloudManager() {}
-    ~CloudManager() {}
-
-    typedef std::function<void(std::string)> RuleSyncCallback;
-
-    void registRuleSyncCallback(RuleSyncCallback cb) {
-        mRuleSyncCB = cb;
-    }
-public:
-    RuleSyncCallback mRuleSyncCB;
+    int setDevicePropertyValue(const std::string deviceId, const std::string propertyKey, const std::string value, bool async = false);
+    int getDevicePropertyValue(const std::string deviceId, const std::string propertyKey, std::string& value, bool async = false);
+    void setCallback(HBDeviceCallBackHandler* callback) { mCallback = callback; }
+    HBDeviceCallBackHandler& cb() { return *mCallback; }
+private:
+    HBDeviceCallBackHandler *mCallback;
 };
 
-CloudManager& cloudManager();
+HBDeviceManager& deviceManager();
 
-std::string getClassByDeviceId(const std::string &deviceId);
+class HBCloudManager {
+public:
+    typedef std::function<void(std::string)> SyncRuleProfileCallback;
+    typedef std::function<void(std::string, std::string)> SyncDeviceProfileCallback;
+    void registSyncDeviceProfileCallback(SyncDeviceProfileCallback cb) {mDeviceProfileCB = cb;}
+    void registSyncRuleProfileCallback(SyncRuleProfileCallback cb) {mRuleProfileCB = cb;}
+    SyncDeviceProfileCallback mDeviceProfileCB;
+    SyncRuleProfileCallback mRuleProfileCB;
+};
+
+HBCloudManager& cloudManager();
+
+std::string getClassNameByDeviceId(const std::string &deviceId);
 
 void tempSimulateTest(Message *msg);
 

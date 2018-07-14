@@ -28,8 +28,6 @@ public:
     virtual bool send(int action, std::shared_ptr<Payload> payload) = 0;
 }; /* class DataChannel */
 
-std::string& stringTrim(std::string &text);
-
 } /* namespace HB */
 
 #endif /* __cplusplus */

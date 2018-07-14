@@ -13,27 +13,30 @@
 #include "ClassPayload.h"
 #include "rapidjson/document.h"
 
+#include "TempSimulateSuite.h" /* TODO only test */
+
 #ifdef __cplusplus
 
 namespace HB {
 
-class DeviceManager;
+class HBDeviceManager;
 class RuleEventHandler;
 
-class DeviceDataChannel : public DataChannel {
+class DeviceDataChannel : public DataChannel, public HBDeviceCallBackHandler {
 public:
     DeviceDataChannel();
     ~DeviceDataChannel();
 
     int init();
 
-    void onStateChanged(std::string did, std::string devName, int state);
-    void onPropertyChanged(std::string did, std::string proKey, std::string proVal);
+    virtual void onDeviceStatusChanged(const std::string deviceId, const std::string deviceName, HBDeviceStatus status);
+    virtual void onDevicePropertyChanged(const std::string deviceId, const std::string propertyKey, std::string value);
 
     virtual bool send(int action, std::shared_ptr<Payload> payload);
 
 protected:
-    DeviceManager &mDeviceMgr;
+    HBDeviceManager &mDeviceMgr;
+    HBCloudManager &mCloudMgr;
     RuleEventHandler &mH;
 
 }; /* class DeviceDataChannel */
@@ -44,8 +47,7 @@ public:
     ~ElinkDeviceDataChannel();
 
     int init();
-
-    void onProfileSync(std::string devName, std::string jsondoc);
+    void onSyncDeviceProfile(const std::string deviceName, const std::string jsonDoc);
 
 private:
     bool _ParsePropValue(const char *propval, Slot &slot);

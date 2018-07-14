@@ -380,6 +380,9 @@ RulePayload::~RulePayload()
 {
     mLHS.reset();
     mRHS.reset();
+    for (size_t i = 0; i < mTimerEvents.size(); ++i)
+        mTimerEvents[i].reset();
+    mTimerEvents.clear();
 }
 
 std::string RulePayload::toString(std::string fmt)

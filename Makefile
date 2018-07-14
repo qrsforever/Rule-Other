@@ -38,7 +38,7 @@ CXX 	:= $(CROSS_COMPILE)g++
 CC		:=
 AR		:= $(CROSS_COMPILE)ar
 CFLAGS  := $(OPTIMIZE) $(WARNINGS) $(DEFS)
-CPPFLAGS:= -std=c++11 -lRE_driver -lClipscpp -lRE_payload -lclips -lUtils_sqlite -lUtils_log -lUtils_message -lUtils_misc -lpthread  -lsqlite3
+CPPFLAGS:= -std=c++11 -lRE_driver -lrt -lClipscpp -lRE_payload -lclips -lUtils_sqlite -lUtils_log -lUtils_message -lUtils_misc -lpthread  -lsqlite3
 LDFLAGS := -L$(DRIVER_DIR)/output -L$(CLIPSCPP_DIR)/output -L$(PAYLOAD_DIR)/output -L$(CLIPS_LIB) -L$(MISC_DIR)/output -L$(MESSAGE_DIR)/output -L$(LOG_DIR)/output -L$(SQLITE_DIR)/output
 INCLUDE := -I$(JSON_DIR)/include -I$(CLIPSCPP_DIR)/src -I$(MISC_DIR)/src -I$(MESSAGE_DIR)/src -I$(LOG_DIR)/src -I$(SQLITE_DIR)/src -I$(PAYLOAD_DIR)/src -I$(DRIVER_DIR)/src -I$(DRIVER_DIR)/src/tables
 
