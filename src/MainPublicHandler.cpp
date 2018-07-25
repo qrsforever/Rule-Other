@@ -13,8 +13,11 @@
 #include "MessageLooper.h"
 #include "RuleEventHandler.h"
 #include "RuleEngineService.h"
+#include "MonitorTool.h"
 
+#ifdef SIM_SUITE
 #include "TempSimulateSuite.h" /* TODO only for test */
+#endif
 
 namespace HB {
 
@@ -35,16 +38,6 @@ MainPublicHandler::MainPublicHandler(MessageQueue *queue)
 MainPublicHandler::~MainPublicHandler()
 {
 
-}
-
-void MainPublicHandler::doSystemEvent(Message *msg)
-{
-    LOGTT();
-}
-
-void MainPublicHandler::doNetworkEvent(Message *msg)
-{
-    LOGTT();
 }
 
 void MainPublicHandler::doDeviceEvent(Message *msg)
@@ -73,27 +66,37 @@ void MainPublicHandler::doRuleEvent(Message *msg)
     }
 }
 
+void MainPublicHandler::doMonitorEvent(Message *msg)
+{
+    switch (msg->arg1) {
+        case MONITOR_CLOSE_CLIENT:
+            monitor().delClient(msg->arg2);
+            break;
+        default:
+            ;
+    }
+}
+
 void MainPublicHandler::doSimulateEvent(Message *msg)
 {
     /* TODO only for test */
+#ifdef SIM_SUITE
     tempSimulateTest(msg);
+#endif
 }
 
 void MainPublicHandler::handleMessage(Message *msg)
 {
     LOGD("msg: [%d] [%d] [%d]\n", msg->what, msg->arg1, msg->arg2);
     switch (msg->what) {
-        case MT_SYSTEM:
-            doSystemEvent(msg);
-            break;
-        case MT_NETWORK:
-            doNetworkEvent(msg);
-            break;
         case MT_DEVICE:
             doDeviceEvent(msg);
             break;
         case MT_RULE:
             doRuleEvent(msg);
+            break;
+        case MT_MONITOR:
+            doMonitorEvent(msg);
             break;
         case MT_SIMULATE:
             doSimulateEvent(msg);

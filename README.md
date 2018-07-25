@@ -432,7 +432,7 @@ Clp Script Design
         +--------+                    |-------------------|                      /              /
     +---| Rule-1 |                    |   rule-id         |                     /              /
     |   +--------+                    |   timeout-ms      |           +---------+       +-----------+        +----------------+
-    |                                 |   retry-count     |---------· | Context |       |  DEVICE   |        |  SmogAlarm     |
+    |                                 |   retry-count     |---------▷ | Context |       |  DEVICE   |        |  SmogAlarm     |
     +-> +--------+                    |   current-try     |           |         |       |-----------|        |----------------|
     +---| Rule-2 |                    |   start-time      |           +---------+       |   ID      |◁ ------|   OnlineState  |
     |   +--------+                    |   act-error       |                             |   UUID    |        |   PowerOnOff   |

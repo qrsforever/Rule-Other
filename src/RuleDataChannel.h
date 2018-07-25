@@ -14,7 +14,9 @@
 #include "TimerEvent.h"
 #include "rapidjson/document.h"
 
+#ifdef SIM_SUITE
 #include "TempSimulateSuite.h"
+#endif
 
 #ifdef __cplusplus
 
@@ -32,7 +34,6 @@ public:
     virtual bool send(int action, std::shared_ptr<Payload> payload);
 
 protected:
-    HBCloudManager &mCloudMgr;
     RuleEventHandler &mH;
 }; /* class RuleDataChannel */
 

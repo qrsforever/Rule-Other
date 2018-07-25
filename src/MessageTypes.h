@@ -15,6 +15,7 @@ enum MessageTypes {
     MT_NETWORK,         /* network message */
     MT_DEVICE,          /* devices message */
     MT_RULE,            /* rule engine message */
+    MT_MONITOR = 99,    /* debug monitor tool */
     MT_SIMULATE = 100,  /* only for simulate */
 };
 
@@ -66,5 +67,11 @@ enum MessageTypes {
 
 #define DEVICE_PROPERTY_REPORT  1   /* device sub event: report property */
 #define DEVICE_PROPERTY_CONTROL 2   /* device sub event: control property */
+
+/*******************
+ *  Monitor Event  *
+ *******************/
+#define MONITOR_CLOSE_CLIENT 1
+
 
 #endif /* __MessageTypes_H__ */

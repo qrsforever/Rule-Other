@@ -16,11 +16,17 @@
 
 /* #define USE_TIMER_EVENT 1 */
 
+#ifndef SIM_SUITE
+std::string getClassNameByDeviceId(const std::string &deviceId)
+{
+    return std::string("");
+}
+#endif
+
 namespace HB {
 
 RuleDataChannel::RuleDataChannel()
-    : mCloudMgr(cloudManager())
-    , mH(ruleHandler())
+    : mH(ruleHandler())
 {
 }
 
@@ -53,13 +59,15 @@ ElinkRuleDataChannel::~ElinkRuleDataChannel()
 int ElinkRuleDataChannel::init()
 {
     LOGTT();
+#ifdef SIM_SUITE
     /* regist rule sync json doc from cloud */
-    mCloudMgr.registSyncRuleProfileCallback(
+    cloudManager().registSyncRuleProfileCallback(
         std::bind(
             &ElinkRuleDataChannel::onSyncRuleProfile,
             this,
             std::placeholders::_1)
         );
+#endif
     return 0;
 }
 

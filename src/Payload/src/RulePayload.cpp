@@ -392,7 +392,7 @@ std::string RulePayload::toString(std::string fmt)
     str.append(" \"").append(mRuleName).append("\"");
     str.append(mLHS->toString());
     if (!mAuto)
-        str.append("\n  ?f <- (scene ").append(mRuleID).append(")");
+        str.append("\n  ?f <- (rule ").append(mRuleID).append(")");
     str.append("\n ").append("=>");
     if (!mAuto)
         str.append("\n  (retract ?f)");

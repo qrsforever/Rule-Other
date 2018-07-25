@@ -5,7 +5,7 @@
 # 其他变量
 OPTIMIZE :=
 WARNINGS := -Wall -Wno-unused -Wno-format
-DEFS     := -DDEBUG -DUSE_SHARED_PTR
+DEFS     := -DDEBUG -DUSE_SHARED_PTR -DSIM_SUITE
 
 CURRENT_DIR := $(shell pwd)
 PROJECT_ROOT_DIR := $(shell dirname `git rev-parse --git-dir`)
@@ -95,7 +95,7 @@ endif
 # 定义伪目标
 PHONY = all .mkdir clean
 
-all: .dep .mkdir $(TARGET_NAME) test
+all: .dep .mkdir $(TARGET_NAME)
 
 # 函数: 添加%.x依赖文件的路径
 define add_vpath
@@ -154,8 +154,8 @@ clean:
 run:$(TARGET_NAME)
 	@$(TARGET_NAME)
 
-test:$(TARGET_NAME)
-	$(CXX) $(INCLUDE) $(OBJECTS) HomeBrainMain.cpp -o $(OUT_DIR)/$@ $(LDFLAGS) $(CPPFLAGS) ${CFLAGS} -Wl,-rpath=$(RPATH)
-	$(OUT_DIR)/$@
+# test:$(TARGET_NAME)
+	# $(CXX) $(INCLUDE) $(OBJECTS) HomeBrainMain.cpp -o $(OUT_DIR)/$@ $(LDFLAGS) $(CPPFLAGS) ${CFLAGS} -Wl,-rpath=$(RPATH)
+	# $(OUT_DIR)/$@
 
 .PHONY: $(PHONY)

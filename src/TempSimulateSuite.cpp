@@ -29,14 +29,14 @@ HBDeviceManager& deviceManager()
     return sDM;
 }
 
-int HBDeviceManager::setDevicePropertyValue(const std::string deviceId, const std::string propertyKey, const std::string value, bool async)
+int HBDeviceManager::SetDevicePropertyValue(const std::string deviceId, const std::string propertyKey, const std::string value, bool async)
 {
     LOGD("set(%s, %s, %s, %d)\n", deviceId.c_str(), propertyKey.c_str(), value.c_str(), async);
     deviceManager().cb().onDevicePropertyChanged(deviceId.c_str(), propertyKey.c_str(), value.c_str());
     return 0;
 }
 
-int HBDeviceManager::getDevicePropertyValue(const std::string deviceId, const std::string propertyKey, std::string& value, bool async)
+int HBDeviceManager::GetDevicePropertyValue(const std::string deviceId, const std::string propertyKey, std::string& value, bool async)
 {
     LOGD("get(%s, %s, %s, %d)\n", deviceId.c_str(), propertyKey.c_str(), value.c_str(), async);
     return 0;

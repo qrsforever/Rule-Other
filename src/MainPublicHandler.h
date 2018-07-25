@@ -27,10 +27,9 @@ protected:
     void handleMessage(Message *msg);
 
 private:
-    void doSystemEvent(Message *msg);
-    void doNetworkEvent(Message *msg);
     void doDeviceEvent(Message *msg);
     void doRuleEvent(Message *msg);
+    void doMonitorEvent(Message *msg);
     void doSimulateEvent(Message *msg);
 
 }; /* class MainPublicHandler */

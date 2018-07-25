@@ -12,17 +12,19 @@
 #include "InstancePayload.h"
 #include "Common.h"
 #include "Log.h"
+#include <map>
+
+#ifndef SIM_SUITE
+extern "C" HBDeviceManager& deviceManager();
+#endif
 
 using namespace UTILS;
 
 namespace HB {
 
 DeviceDataChannel::DeviceDataChannel()
-    : mDeviceMgr(deviceManager())
-    , mCloudMgr(cloudManager())
-    , mH(ruleHandler())
+    : mH(ruleHandler())
 {
-    mDeviceMgr.setCallback(this);
 }
 
 DeviceDataChannel::~DeviceDataChannel()
@@ -37,7 +39,6 @@ int DeviceDataChannel::init()
 
 void DeviceDataChannel::onDeviceStatusChanged(const std::string deviceId, const std::string deviceName, HBDeviceStatus status)
 {
-    LOGTT();
     switch (status) {
         case HB_DEVICE_STATUS_ONLINE:
             {
@@ -63,7 +64,8 @@ void DeviceDataChannel::onDeviceStatusChanged(const std::string deviceId, const 
 
 void DeviceDataChannel::onDevicePropertyChanged(const std::string deviceId, const std::string proKey, std::string proVal)
 {
-    LOGTT();
+    if (proKey == "n")
+        return;
     std::shared_ptr<InstancePayload> payload = std::make_shared<InstancePayload>();
     payload->mInsName = innerOfInsname(deviceId);
     payload->mSlots.push_back(InstancePayload::SlotInfo(proKey, proVal));
@@ -75,7 +77,7 @@ bool DeviceDataChannel::send(int action, std::shared_ptr<Payload> data)
     LOGTT();
     if (action == PT_INSTANCE_PAYLOAD) {
         std::shared_ptr<InstancePayload> payload(std::dynamic_pointer_cast<InstancePayload>(data));
-        mDeviceMgr.setDevicePropertyValue(
+        deviceManager().SetDevicePropertyValue(
             outerOfInsname(payload->mInsName),
             payload->mSlots[0].nName,
             payload->mSlots[0].nValue, true);
@@ -96,13 +98,47 @@ int ElinkDeviceDataChannel::init()
     DeviceDataChannel::init();
 
     /* regist device profile sync callback */
-    mCloudMgr.registSyncDeviceProfileCallback(
+#ifdef SIM_SUITE
+    cloudManager().registSyncDeviceProfileCallback(
         std::bind(
             &ElinkDeviceDataChannel::onSyncDeviceProfile,
             this,
             std::placeholders::_1,
             std::placeholders::_2)
         );
+#else
+    std::map<std::string, OCFDevice::Ptr> deviceList;
+    deviceManager().GetAllDevices(deviceList);
+    LOGD("GetAllDevices size = [%d]\n", deviceList.size());
+    std::map<std::string, OCFDevice::Ptr>::iterator device;
+    for (device = deviceList.begin(); device != deviceList.end(); device++) {
+        std::string deviceId = device->first;
+        LOGD("get device : %s %s\n", deviceId.c_str(), device->second->m_deviceType.c_str());
+        onDeviceStatusChanged(deviceId, device->second->m_deviceType, HB_DEVICE_STATUS_ONLINE);
+        std::map<std::string, HBPropertyType> propertyList;
+        for (int i = 0; i < 3; ++i) {
+            if (-1 == deviceManager().GetDevicePropertyList(deviceId, propertyList))
+                continue;
+            break;
+        }
+        std::map<std::string, HBPropertyType>::iterator property;
+        for (property = propertyList.begin(); property != propertyList.end(); property++) {
+            std::string propertyKey = property->first;
+            if (propertyKey == "n")
+                continue;
+            std::string propertyValue;
+            for (int i = 0; i < 3; ++i) {
+                if (-1 == deviceManager().GetDevicePropertyValue(deviceId, propertyKey, propertyValue, false))
+                    continue;
+
+                LOGD("getProperty[%s]: %s = %s\n", deviceId.c_str(), propertyKey.c_str(), propertyValue.c_str());
+                onDevicePropertyChanged(deviceId, propertyKey, propertyValue);
+                break;
+            }
+        }
+    }
+#endif
+    LOGD("init end\n");
     return 0;
 }
 

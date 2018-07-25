@@ -31,15 +31,14 @@ class HBDeviceCallBackHandler {
 public:
     virtual ~HBDeviceCallBackHandler() {}
 
-    virtual void onDeviceStatusChanged(const std::string deviceId, const std::string deviceName, HBDeviceStatus status) = 0;
+    virtual void onDeviceStatusChanged(const std::string deviceId, const std::string deviceType, HBDeviceStatus status) = 0;
     virtual void onDevicePropertyChanged(const std::string deviceId, const std::string propertyKey, std::string value) = 0;
 };
 
 class HBDeviceManager {
 public:
-    int setDevicePropertyValue(const std::string deviceId, const std::string propertyKey, const std::string value, bool async = false);
-    int getDevicePropertyValue(const std::string deviceId, const std::string propertyKey, std::string& value, bool async = false);
-    void setCallback(HBDeviceCallBackHandler* callback) { mCallback = callback; }
+    int SetDevicePropertyValue(const std::string deviceId, const std::string propertyKey, const std::string value, bool async = false);
+    int GetDevicePropertyValue(const std::string deviceId, const std::string propertyKey, std::string& value, bool async = false);
     HBDeviceCallBackHandler& cb() { return *mCallback; }
 private:
     HBDeviceCallBackHandler *mCallback;
